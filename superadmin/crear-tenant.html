@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Tenant | Superadmin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body class="bg-[#0a0a0a] text-[#f5f5f5]">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-[#f97316] rounded-lg flex items-center justify-center">
+          <i data-lucide="utensils" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <p class="font-display text-lg">Fast Orden</p>
+          <p class="text-xs text-[#facc15]">Superadmin</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="tenants.html" class="sidebar-link">
+        <i data-lucide="building-2"></i>
+        <span>Tenants</span>
+      </a>
+      <a href="crear-tenant.html" class="sidebar-link active">
+        <i data-lucide="plus-circle"></i>
+        <span>Nuevo Tenant</span>
+      </a>
+    </nav>
+
+    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#2a2a2a]">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-8 h-8 bg-[#1f1f1f] rounded-full flex items-center justify-center">
+          <i data-lucide="user" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p id="userName" class="text-sm font-medium truncate">Cargando...</p>
+          <p class="text-xs text-[#facc15]">Superadmin</p>
+        </div>
+      </div>
+      <button id="logoutBtn" class="btn btn-ghost w-full justify-start">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="font-display text-3xl">Crear Nuevo Tenant</h1>
+      <p class="text-[#9ca3af]">Registra un nuevo negocio en Fast Orden</p>
+    </div>
+
+    <!-- Formulario -->
+    <form id="createTenantForm" class="max-w-4xl">
+      <!-- Datos del Negocio -->
+      <div class="card p-6 mb-6">
+        <h2 class="font-display text-xl mb-6 flex items-center gap-2">
+          <i data-lucide="store" class="w-5 h-5 text-[#f97316]"></i>
+          Datos del Negocio
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <label class="form-label">Nombre del Negocio *</label>
+            <input type="text" id="businessName" required class="form-input" placeholder="Ej: Mi Castillo Sabor">
+          </div>
+
+          <div>
+            <label class="form-label">Slug (URL) *</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9ca3af]">/menu?tenant=</span>
+              <input type="text" id="businessSlug" required class="form-input pl-[140px]" placeholder="minegocio">
+            </div>
+            <p class="text-xs text-[#9ca3af] mt-1">Solo letras minúsculas, números y guiones</p>
+          </div>
+
+          <div>
+            <label class="form-label">Slogan</label>
+            <input type="text" id="businessSlogan" class="form-input" placeholder="Tu eslogan aquí...">
+          </div>
+
+          <div>
+            <label class="form-label">WhatsApp *</label>
+            <div class="relative">
+              <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#22c55e]"></i>
+              <input type="tel" id="businessWhatsapp" required class="form-input pl-12" placeholder="8090000000">
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Moneda</label>
+            <select id="businessCurrency" class="form-input">
+              <option value="RD$">RD$ - Peso Dominicano</option>
+              <option value="USD">$ - Dólar</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label">Costo de Delivery</label>
+            <div class="relative">
+              <span id="deliverySymbol" class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9ca3af]">RD$</span>
+              <input type="number" id="businessDelivery" class="form-input pl-14" value="50" min="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plan -->
+      <div class="card p-6 mb-6">
+        <h2 class="font-display text-xl mb-6 flex items-center gap-2">
+          <i data-lucide="crown" class="w-5 h-5 text-[#facc15]"></i>
+          Plan y Facturación
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label class="form-label">Plan *</label>
+            <select id="tenantPlan" class="form-input" required>
+              <option value="basico">Básico - RD$800/mes (30 productos)</option>
+              <option value="pro">Pro - RD$1,500/mes (Ilimitado)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label">Ciclo de Pago *</label>
+            <select id="tenantCiclo" class="form-input" required>
+              <option value="mensual">Mensual</option>
+              <option value="anual">Anual (-15%)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label">Fecha de Inicio *</label>
+            <input type="date" id="planStartDate" required class="form-input">
+          </div>
+        </div>
+
+        <div id="planSummary" class="mt-6 p-4 bg-[#1f1f1f] rounded-xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-[#9ca3af]">Precio mensual</p>
+              <p id="planPrice" class="text-2xl font-display">RD$800</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-[#9ca3af]">Vence el</p>
+              <p id="planExpiry" class="font-medium">...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin del Tenant -->
+      <div class="card p-6 mb-6">
+        <h2 class="font-display text-xl mb-6 flex items-center gap-2">
+          <i data-lucide="user-cog" class="w-5 h-5 text-[#f97316]"></i>
+          Administrador del Tenant
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <label class="form-label">Nombre Completo *</label>
+            <input type="text" id="adminName" required class="form-input" placeholder="Nombre del administrador">
+          </div>
+
+          <div>
+            <label class="form-label">Email *</label>
+            <div class="relative">
+              <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
+              <input type="email" id="adminEmail" required class="form-input pl-12" placeholder="admin@ejemplo.com">
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Contraseña Temporal *</label>
+            <div class="relative">
+              <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
+              <input type="text" id="adminPassword" required class="form-input pl-12 pr-24" placeholder="Mínimo 6 caracteres">
+              <button type="button" id="generatePassword" class="absolute right-2 top-1/2 -translate-y-1/2 btn btn-secondary btn-sm text-xs">Generar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex gap-4">
+        <button type="button" onclick="history.back()" class="btn btn-secondary">Cancelar</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary flex-1">
+          <span id="submitBtnText">Crear Tenant</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Resumen del Tenant Creado -->
+    <div id="successModal" class="fixed inset-0 z-[200] hidden">
+      <div class="absolute inset-0 bg-black/70"></div>
+      <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-[#141414] border border-[#2a2a2a] rounded-2xl max-w-lg w-full p-6">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-[#22c55e]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="check" class="w-8 h-8 text-[#22c55e]"></i>
+            </div>
+            <h2 class="font-display text-2xl">¡Tenant Creado!</h2>
+            <p class="text-[#9ca3af] mt-2">El negocio ha sido registrado exitosamente</p>
+          </div>
+
+          <div class="space-y-4 bg-[#1f1f1f] rounded-xl p-4">
+            <div>
+              <p class="text-sm text-[#9ca3af]">URL del Menú:</p>
+              <div class="flex gap-2 mt-1">
+                <input type="text" id="successUrl" readonly class="form-input text-sm flex-1">
+                <button id="copyUrlBtn" class="btn btn-secondary btn-sm">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="border-t border-[#2a2a2a] pt-4">
+              <p class="text-sm text-[#9ca3af]">Credenciales del Admin:</p>
+              <div class="mt-2 space-y-2 text-sm">
+                <p><span class="text-[#9ca3af]">Email:</span> <span id="successEmail" class="font-medium"></span></p>
+                <p><span class="text-[#9ca3af]">Contraseña:</span> <span id="successPassword" class="font-medium"></span></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex gap-3">
+            <a href="tenants.html" class="btn btn-secondary flex-1 text-center">Ver Tenants</a>
+            <button onclick="resetForm()" class="btn btn-primary flex-1">Crear Otro</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-[#ef4444] text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-[300] flex items-center gap-2">
+    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+    <span id="toastMessage">Error</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../assets/js/supabase.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    const EDGE_FUNCTION_URL = 'https://yetdmvlisxavxdwdxyyb.supabase.co/functions/v1/create-admin-user';
+
+    let profile = null;
+
+    async function init() {
+      profile = await window.auth.protectSuperadminRoute();
+      if (!profile) return;
+
+      document.getElementById('userName').textContent = profile.nombre;
+
+      // Fecha por defecto: hoy
+      document.getElementById('planStartDate').valueAsDate = new Date();
+
+      updatePlanSummary();
+
+      lucide.createIcons();
+    }
+
+    // Auto-generar slug
+    document.getElementById('businessName').addEventListener('input', (e) => {
+      const name = e.target.value;
+      const slug = name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      const slugInput = document.getElementById('businessSlug');
+      if (!slugInput.dataset.userModified) {
+        slugInput.value = slug;
+      }
+    });
+
+    document.getElementById('businessSlug').addEventListener('input', (e) => {
+      e.target.dataset.userModified = 'true';
+    });
+
+    // Validar slug
+    document.getElementById('businessSlug').addEventListener('blur', (e) => {
+      let slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+      e.target.value = slug;
+    });
+
+    // Actualizar símbolo de moneda
+    document.getElementById('businessCurrency').addEventListener('change', (e) => {
+      document.getElementById('deliverySymbol').textContent = e.target.value;
+    });
+
+    // Actualizar resumen del plan
+    function updatePlanSummary() {
+      const plan = document.getElementById('tenantPlan').value;
+      const ciclo = document.getElementById('tenantCiclo').value;
+      const startDate = document.getElementById('planStartDate').valueAsDate || new Date();
+
+      const precioMensual = plan === 'pro' ? 1500 : 800;
+      const precioAnual = plan === 'pro' ? 15300 : 8160;
+
+      let precioMostrar;
+      if (ciclo === 'anual') {
+        precioMostrar = `RD$${precioAnual.toLocaleString('es-DO')}/año`;
+      } else {
+        precioMostrar = `RD$${precioMensual.toLocaleString('es-DO')}/mes`;
+      }
+
+      document.getElementById('planPrice').textContent = precioMostrar;
+
+      // Fecha de vencimiento
+      const expiryDate = new Date(startDate);
+      if (ciclo === 'anual') {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      } else {
+        expiryDate.setMonth(expiryDate.getMonth() + 1);
+      }
+
+      document.getElementById('planExpiry').textContent = expiryDate.toLocaleDateString('es-DO', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    document.getElementById('tenantPlan').addEventListener('change', updatePlanSummary);
+    document.getElementById('tenantCiclo').addEventListener('change', updatePlanSummary);
+    document.getElementById('planStartDate').addEventListener('change', updatePlanSummary);
+
+    // Generar contraseña
+    document.getElementById('generatePassword').addEventListener('click', () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let password = '';
+      for (let i = 0; i < 10; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('adminPassword').value = password;
+    });
+
+    // Submit
+    document.getElementById('createTenantForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submitBtn');
+      const submitBtnText = document.getElementById('submitBtnText');
+
+      submitBtn.disabled = true;
+      submitBtnText.textContent = 'Creando...';
+
+      try {
+        // 1. Preparar datos del tenant
+        const startDate = document.getElementById('planStartDate').valueAsDate;
+        const ciclo = document.getElementById('tenantCiclo').value;
+
+        const expiryDate = new Date(startDate);
+        if (ciclo === 'anual') {
+          expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        } else {
+          expiryDate.setMonth(expiryDate.getMonth() + 1);
+        }
+
+        const tenantData = {
+          slug: document.getElementById('businessSlug').value,
+          nombre: document.getElementById('businessName').value,
+          slogan: document.getElementById('businessSlogan').value,
+          whatsapp: document.getElementById('businessWhatsapp').value,
+          moneda: document.getElementById('businessCurrency').value,
+          costo_delivery: parseFloat(document.getElementById('businessDelivery').value) || 50,
+          plan: document.getElementById('tenantPlan').value,
+          ciclo: ciclo,
+          plan_expira_at: expiryDate.toISOString(),
+          activo: true
+        };
+
+        // 2. Crear tenant
+        const { data: tenant, error: tenantError } = await supabase
+          .from('tenants')
+          .insert(tenantData)
+          .select()
+          .single();
+
+        if (tenantError) {
+          if (tenantError.message.includes('unique constraint')) {
+            throw new Error('El slug ya está en uso. Elige otro.');
+          }
+          throw tenantError;
+        }
+
+        // 3. Crear usuario admin via Edge Function
+        const adminData = {
+          nombre: document.getElementById('adminName').value,
+          email: document.getElementById('adminEmail').value,
+          password: document.getElementById('adminPassword').value,
+          tenant_id: tenant.id
+        };
+
+        const { data: { session } } = await supabase.auth.getSession();
+
+        const response = await fetch(EDGE_FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify(adminData)
+        });
+
+        if (!response.ok) {
+          // Rollback: eliminar tenant
+          await supabase.from('tenants').delete().eq('id', tenant.id);
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error al crear el usuario admin');
+        }
+
+        // 4. Mostrar resumen
+        const baseUrl = window.location.origin;
+        document.getElementById('successUrl').value = `${baseUrl}/menu.html?tenant=${tenant.slug}`;
+        document.getElementById('successEmail').textContent = adminData.email;
+        document.getElementById('successPassword').textContent = adminData.password;
+
+        document.getElementById('successModal').classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Error:', error);
+        showToast(error.message || 'Error al crear el tenant');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtnText.textContent = 'Crear Tenant';
+      }
+    });
+
+    // Copiar URL
+    document.getElementById('copyUrlBtn').addEventListener('click', () => {
+      const url = document.getElementById('successUrl').value;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('copyUrlBtn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>';
+        lucide.createIcons();
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          lucide.createIcons();
+        }, 2000);
+      });
+    });
+
+    // Reset form
+    window.resetForm = function() {
+      document.getElementById('createTenantForm').reset();
+      document.getElementById('businessSlug').dataset.userModified = '';
+      document.getElementById('planStartDate').valueAsDate = new Date();
+      document.getElementById('successModal').classList.add('hidden');
+      updatePlanSummary();
+    };
+
+    // Toast
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      toastMessage.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 5000);
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>

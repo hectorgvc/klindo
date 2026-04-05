@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="bg-[#0a0a0a] text-[#f5f5f5] font-body min-h-screen">
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 bg-[#141414]/95 backdrop-blur border-b border-[#2a2a2a]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo y Nombre -->
+        <div class="flex items-center gap-3">
+          <img data-tenant="logo" src="" alt="Logo" class="h-10 w-10 object-contain hidden rounded-lg">
+          <div>
+            <h1 data-tenant="nombre" class="font-display text-xl text-white">Cargando...</h1>
+          </div>
+        </div>
+        <!-- Carrito -->
+        <button id="cartBtn" class="relative p-2 rounded-full hover:bg-[#1f1f1f] transition-colors">
+          <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+          <span id="cartBadge" class="badge absolute -top-1 -right-1 hidden">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="py-12 px-4 text-center">
+    <h1 data-tenant="nombre" class="font-display text-5xl md:text-6xl mb-4">Cargando...</h1>
+    <p data-tenant="slogan" class="text-[#9ca3af] text-lg max-w-2xl mx-auto">...</p>
+  </header>
+
+  <!-- Sección de Ofertas -->
+  <section id="ofertasSection" class="hidden max-w-7xl mx-auto px-4 mb-8">
+    <div class="bg-gradient-to-r from-orange-900/50 via-red-900/50 to-orange-900/50 border border-orange-500/30 rounded-2xl p-6">
+      <h2 class="font-display text-2xl mb-6 flex items-center gap-2">
+        <span class="animate-pulse">🔥</span>
+        Ofertas de Hoy
+      </h2>
+      <div id="ofertasGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Ofertas se cargan dinámicamente -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Buscador -->
+  <section class="max-w-2xl mx-auto px-4 mb-8">
+    <div class="relative">
+      <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
+      <input type="text" id="searchInput" placeholder="Buscar productos..."
+        class="w-full pl-12 pr-4 py-3 bg-[#141414] border border-[#2a2a2a] rounded-xl text-white placeholder-[#9ca3af] focus:outline-none focus:border-[#f97316]">
+    </div>
+  </section>
+
+  <!-- Tabs de Categorías -->
+  <section class="max-w-7xl mx-auto px-4 mb-6">
+    <div id="categoryTabs" class="tabs">
+      <button class="tab active" data-category="all">Todos</button>
+    </div>
+  </section>
+
+  <!-- Grid de Productos -->
+  <section class="max-w-7xl mx-auto px-4 pb-24">
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Productos se cargan dinámicamente -->
+    </div>
+    <div id="emptyState" class="hidden text-center py-16">
+      <i data-lucide="utensils" class="w-16 h-16 mx-auto text-[#2a2a2a] mb-4"></i>
+      <p class="text-[#9ca3af]">No hay productos disponibles</p>
+    </div>
+  </section>
+
+  <!-- Botón de Cuentas Bancarias -->
+  <div class="fixed bottom-4 left-4 z-40">
+    <a id="cuentasLink" href="#" class="btn btn-secondary btn-sm flex items-center gap-2">
+      <i data-lucide="building-2" class="w-4 h-4"></i>
+      <span class="hidden sm:inline">Cuentas Bancarias</span>
+    </a>
+  </div>
+
+  <!-- Carrito Sidebar -->
+  <div id="cartOverlay" class="cart-overlay"></div>
+  <div id="cartSidebar" class="cart-sidebar">
+    <div class="cart-header">
+      <h2 class="font-display text-2xl">Tu Pedido</h2>
+      <button id="closeCart" class="p-2 hover:bg-[#1f1f1f] rounded-lg transition-colors">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    <div id="cartBody" class="cart-body">
+      <div id="cartEmpty" class="text-center py-8">
+        <i data-lucide="shopping-bag" class="w-16 h-16 mx-auto text-[#2a2a2a] mb-4"></i>
+        <p class="text-[#9ca3af]">Tu carrito está vacío</p>
+      </div>
+      <div id="cartItems" class="hidden space-y-4"></div>
+    </div>
+    <div id="cartFooter" class="cart-footer hidden">
+      <div class="space-y-2 mb-4">
+        <div class="flex justify-between text-[#9ca3af]">
+          <span>Subtotal</span>
+          <span id="cartSubtotal">RD$0</span>
+        </div>
+        <div id="deliveryRow" class="flex justify-between text-[#9ca3af] hidden">
+          <span>Delivery</span>
+          <span id="cartDelivery">RD$0</span>
+        </div>
+        <div class="flex justify-between text-xl font-semibold border-t border-[#2a2a2a] pt-2">
+          <span>Total</span>
+          <span id="cartTotal" class="text-[#f97316]">RD$0</span>
+        </div>
+      </div>
+      <button id="checkoutBtn" class="btn btn-primary w-full">
+        <span>Continuar</span>
+        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Pedido -->
+  <div id="orderModal" class="fixed inset-0 z-[300] hidden">
+    <div class="absolute inset-0 bg-black/70" id="orderModalOverlay"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-[#141414] rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <!-- Paso 1: Tipo de Entrega -->
+        <div id="step1" class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-display text-2xl">Tipo de Entrega</h3>
+            <button id="closeOrderModal" class="p-2 hover:bg-[#1f1f1f] rounded-lg">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          <div class="space-y-3">
+            <button class="delivery-option w-full p-4 bg-[#1f1f1f] border-2 border-transparent rounded-xl hover:border-[#f97316] transition-all text-left" data-value="delivery">
+              <div class="flex items-center gap-3">
+                <i data-lucide="truck" class="w-6 h-6 text-[#f97316]"></i>
+                <div>
+                  <p class="font-semibold">Delivery</p>
+                  <p class="text-sm text-[#9ca3af]">Te lo llevamos a tu ubicación</p>
+                </div>
+              </div>
+            </button>
+            <button class="delivery-option w-full p-4 bg-[#1f1f1f] border-2 border-transparent rounded-xl hover:border-[#f97316] transition-all text-left" data-value="pickup">
+              <div class="flex items-center gap-3">
+                <i data-lucide="store" class="w-6 h-6 text-[#facc15]"></i>
+                <div>
+                  <p class="font-semibold">Retirar en Local</p>
+                  <p class="text-sm text-[#9ca3af]">Pasa a buscar tu pedido</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 2: Método de Pago -->
+        <div id="step2" class="p-6 hidden">
+          <div class="flex items-center gap-2 mb-6">
+            <button id="backToStep1" class="p-2 hover:bg-[#1f1f1f] rounded-lg">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-display text-2xl">Método de Pago</h3>
+          </div>
+          <div class="space-y-3">
+            <button class="payment-option w-full p-4 bg-[#1f1f1f] border-2 border-transparent rounded-xl hover:border-[#f97316] transition-all text-left" data-value="efectivo">
+              <div class="flex items-center gap-3">
+                <i data-lucide="banknote" class="w-6 h-6 text-[#22c55e]"></i>
+                <div>
+                  <p class="font-semibold">Efectivo</p>
+                  <p class="text-sm text-[#9ca3af]">Pagas al recibir</p>
+                </div>
+              </div>
+            </button>
+            <button class="payment-option w-full p-4 bg-[#1f1f1f] border-2 border-transparent rounded-xl hover:border-[#f97316] transition-all text-left" data-value="transferencia">
+              <div class="flex items-center gap-3">
+                <i data-lucide="building-2" class="w-6 h-6 text-[#3b82f6]"></i>
+                <div>
+                  <p class="font-semibold">Transferencia Bancaria</p>
+                  <p class="text-sm text-[#9ca3af]">Te enviamos los datos</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 3: Datos del Cliente -->
+        <div id="step3" class="p-6 hidden">
+          <div class="flex items-center gap-2 mb-6">
+            <button id="backToStep2" class="p-2 hover:bg-[#1f1f1f] rounded-lg">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h3 class="font-display text-2xl">Tus Datos</h3>
+          </div>
+          <form id="customerForm" class="space-y-4">
+            <div>
+              <label class="form-label">Nombre completo *</label>
+              <input type="text" id="customerName" required class="form-input" placeholder="Tu nombre">
+            </div>
+            <div>
+              <label class="form-label">Teléfono *</label>
+              <input type="tel" id="customerPhone" required class="form-input" placeholder="809-000-0000">
+            </div>
+            <div id="addressContainer" class="hidden">
+              <label class="form-label">Dirección de entrega *</label>
+              <textarea id="customerAddress" rows="3" class="form-input" placeholder="Calle, número, sector..."></textarea>
+              <p class="text-sm text-[#facc15] mt-2 flex items-center gap-2">
+                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                Después de enviar el pedido, comparte tu ubicación por WhatsApp
+              </p>
+            </div>
+            <div>
+              <label class="form-label">Notas (opcional)</label>
+              <textarea id="orderNotes" rows="2" class="form-input" placeholder="Alguna indicación especial..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-full">
+              <span>Confirmar Pedido</span>
+              <i data-lucide="send" class="w-5 h-5"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Paso 4: Confirmación -->
+        <div id="step4" class="p-6 hidden">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-[#22c55e]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="check" class="w-8 h-8 text-[#22c55e]"></i>
+            </div>
+            <h3 class="font-display text-2xl mb-2">¡Pedido Enviado!</h3>
+            <p class="text-[#9ca3af] mb-6">Serás redirigido a WhatsApp para confirmar tu pedido</p>
+            <div class="bg-[#1f1f1f] rounded-lg p-4 mb-6 text-left">
+              <p class="text-sm text-[#9ca3af] mb-2">Resumen:</p>
+              <div id="orderSummary" class="space-y-1 text-sm"></div>
+            </div>
+            <a id="whatsappLink" href="#" target="_blank" class="btn btn-primary w-full inline-flex">
+              <span>Abrir WhatsApp</span>
+              <i data-lucide="external-link" class="w-5 h-5"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/tenant-theme.js"></script>
+  <script src="assets/js/carrito.js"></script>
+  <script>
+    // Inicializar Lucide icons
+    lucide.createIcons();
+
+    // Variables globales
+    let currentTenant = null;
+    let products = [];
+    let categories = [];
+    let ofertas = [];
+    let currentCategory = 'all';
+    let currentStep = 1;
+    let orderData = {
+      tipo_entrega: null,
+      metodo_pago: null,
+      delivery: 0
+    };
+
+    // Función para verificar si una oferta está activa
+    function ofertaEstaActiva(oferta) {
+      if (!oferta.activa) return false;
+      if (oferta.siempre_activa) return true;
+
+      const hoy = new Date();
+      const diasSemana = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+      const diaHoy = diasSemana[hoy.getDay()];
+
+      // Verificar fechas
+      if (oferta.fecha_inicio && oferta.fecha_fin) {
+        const inicio = new Date(oferta.fecha_inicio);
+        const fin = new Date(oferta.fecha_fin);
+        fin.setHours(23, 59, 59);
+        if (hoy < inicio || hoy > fin) return false;
+      }
+
+      // Verificar días de la semana
+      if (oferta.dias_semana && oferta.dias_semana.length > 0) {
+        if (!oferta.dias_semana.includes(diaHoy)) return false;
+      }
+
+      return true;
+    }
+
+    // Inicializar
+    async function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('tenant');
+
+      if (!slug) {
+        document.body.innerHTML = `
+          <div class="flex items-center justify-center min-h-screen">
+            <div class="text-center">
+              <i data-lucide="alert-triangle" class="w-16 h-16 mx-auto text-[#facc15] mb-4"></i>
+              <h1 class="font-display text-3xl mb-2">URL Inválida</h1>
+              <p class="text-[#9ca3af]">Se requiere el parámetro ?tenant=slug</p>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      // Cargar tenant
+      currentTenant = await window.tenantTheme.loadTenantBySlug(slug);
+      if (!currentTenant) {
+        document.body.innerHTML = `
+          <div class="flex items-center justify-center min-h-screen">
+            <div class="text-center">
+              <i data-lucide="store" class="w-16 h-16 mx-auto text-[#9ca3af] mb-4"></i>
+              <h1 class="font-display text-3xl mb-2">Negocio No Encontrado</h1>
+              <p class="text-[#9ca3af]">El menú solicitado no existe o está inactivo</p>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      // Aplicar tema
+      window.tenantTheme.applyTenantTheme(currentTenant);
+
+      // Actualizar link de cuentas
+      document.getElementById('cuentasLink').href = `/cuentas.html?tenant=${slug}`;
+
+      // Cargar datos
+      await loadCategories();
+      await loadProducts();
+      await loadOfertas();
+
+      // Inicializar Lucide icons de nuevo
+      lucide.createIcons();
+    }
+
+    // Cargar categorías
+    async function loadCategories() {
+      const { data, error } = await supabase
+        .from('categorias')
+        .select('*')
+        .eq('tenant_id', currentTenant.id)
+        .eq('activa', true)
+        .order('orden');
+
+      if (error) {
+        console.error('Error cargando categorías:', error);
+        return;
+      }
+
+      categories = data || [];
+      renderCategoryTabs();
+    }
+
+    // Cargar productos
+    async function loadProducts() {
+      const { data, error } = await supabase
+        .from('productos')
+        .select('*, categorias(nombre)')
+        .eq('tenant_id', currentTenant.id)
+        .eq('disponible', true)
+        .order('orden');
+
+      if (error) {
+        console.error('Error cargando productos:', error);
+        return;
+      }
+
+      products = data || [];
+      renderProducts();
+    }
+
+    // Cargar ofertas
+    async function loadOfertas() {
+      const { data, error } = await supabase
+        .from('ofertas')
+        .select('*')
+        .eq('tenant_id', currentTenant.id)
+        .eq('activa', true);
+
+      if (error) {
+        console.error('Error cargando ofertas:', error);
+        return;
+      }
+
+      ofertas = data || [];
+      renderOfertas();
+    }
+
+    // Renderizar ofertas
+    function renderOfertas() {
+      const container = document.getElementById('ofertasSection');
+      const grid = document.getElementById('ofertasGrid');
+
+      const ofertasActivas = ofertas.filter(o => ofertaEstaActiva(o));
+
+      if (ofertasActivas.length === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+
+      grid.innerHTML = ofertasActivas.map(oferta => {
+        const isCombo = oferta.tipo === 'combo';
+
+        return `
+          <div class="bg-[#141414] border border-orange-500/30 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform" onclick="addOfertaToCart('${oferta.id}')">
+            <div class="relative">
+              ${oferta.imagen_url ? `
+                <img src="${oferta.imagen_url}" alt="${oferta.nombre}" class="w-full h-32 object-cover">
+              ` : `
+                <div class="w-full h-32 bg-gradient-to-br from-[#f97316] to-[#dc2626] flex items-center justify-center">
+                  <i data-lucide="${isCombo ? 'package-plus' : 'percent'}" class="w-10 h-10 text-white"></i>
+                </div>
+              `}
+              <span class="absolute top-2 right-2 badge bg-[#ef4444]">OFERTA</span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-lg mb-1">${oferta.nombre}</h3>
+              ${oferta.descripcion ? `<p class="text-sm text-[#9ca3af] mb-2">${oferta.descripcion}</p>` : ''}
+              ${isCombo ? `
+                <p class="text-sm text-[#9ca3af] mb-2">${oferta.contenido_combo}</p>
+                <div class="flex items-center justify-between">
+                  <span class="font-display text-xl text-[#f97316]">${currentTenant.moneda || 'RD$'}${oferta.precio_oferta.toFixed(2)}</span>
+                  <button class="p-2 bg-[#f97316] rounded-full hover:bg-[#ea580c] transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4 text-white"></i>
+                  </button>
+                </div>
+              ` : `
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-sm text-[#9ca3af] line-through">${currentTenant.moneda || 'RD$'}${oferta.precio_original?.toFixed(2)}</span>
+                    <span class="font-display text-xl text-[#f97316] ml-2">${currentTenant.moneda || 'RD$'}${oferta.precio_oferta.toFixed(2)}</span>
+                  </div>
+                  <button class="p-2 bg-[#f97316] rounded-full hover:bg-[#ea580c] transition-colors">
+                    <i data-lucide="plus" class="w-4 h-4 text-white"></i>
+                  </button>
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // Agregar oferta al carrito
+    window.addOfertaToCart = function(ofertaId) {
+      const oferta = ofertas.find(o => o.id === ofertaId);
+      if (!oferta) return;
+
+      const isCombo = oferta.tipo === 'combo';
+      const nombre = isCombo ? oferta.nombre : `${oferta.nombre} (Oferta)`;
+
+      const item = {
+        id: `oferta-${oferta.id}`,
+        nombre: nombre,
+        precio: oferta.precio_oferta,
+        imagen_url: oferta.imagen_url,
+        cantidad: 1,
+        tenant_id: currentTenant.id,
+        esOferta: true
+      };
+
+      window.carrito.addItem(item, currentTenant);
+      updateCartUI();
+    };
+
+    // Renderizar tabs de categorías
+    function renderCategoryTabs() {
+      const container = document.getElementById('categoryTabs');
+      container.innerHTML = `
+        <button class="tab active" data-category="all">Todos</button>
+        ${categories.map(cat => `
+          <button class="tab" data-category="${cat.id}">
+            ${cat.emoji ? cat.emoji + ' ' : ''}${cat.nombre}
+          </button>
+        `).join('')}
+      `;
+
+      // Event listeners
+      container.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentCategory = tab.dataset.category;
+          renderProducts();
+        });
+      });
+    }
+
+    // Renderizar productos
+    function renderProducts() {
+      const container = document.getElementById('productsGrid');
+      const emptyState = document.getElementById('emptyState');
+
+      let filteredProducts = products;
+
+      // Filtrar por categoría
+      if (currentCategory !== 'all') {
+        filteredProducts = products.filter(p => p.categoria_id === currentCategory);
+      }
+
+      // Filtrar por búsqueda
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      if (searchTerm) {
+        filteredProducts = filteredProducts.filter(p =>
+          p.nombre.toLowerCase().includes(searchTerm) ||
+          (p.descripcion && p.descripcion.toLowerCase().includes(searchTerm))
+        );
+      }
+
+      if (filteredProducts.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      container.innerHTML = filteredProducts.map(product => `
+        <div class="product-card group" onclick="addToCart('${product.id}')">
+          ${product.imagen_url ? `
+            <img src="${product.imagen_url}" alt="${product.nombre}" class="product-image">
+          ` : `
+            <div class="product-image flex items-center justify-center bg-[#1f1f1f]">
+              <i data-lucide="utensils" class="w-12 h-12 text-[#2a2a2a]"></i>
+            </div>
+          `}
+          <div class="product-content">
+            <h3 class="product-name">${product.nombre}</h3>
+            ${product.descripcion ? `<p class="product-description">${product.descripcion}</p>` : ''}
+            <div class="flex items-center justify-between mt-3">
+              <span class="product-price">${currentTenant.moneda || 'RD$'}${product.precio.toFixed(2)}</span>
+              <button class="p-2 bg-[#1f1f1f] rounded-full hover:bg-[#f97316] transition-colors group-hover:bg-[#f97316]">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // Buscar productos
+    document.getElementById('searchInput').addEventListener('input', renderProducts);
+
+    // Agregar al carrito
+    window.addToCart = function(productId) {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        window.carrito.addItem(product, currentTenant);
+        updateCartUI();
+      }
+    };
+
+    // Actualizar UI del carrito
+    function updateCartUI() {
+      const cart = window.carrito.getCart();
+      const badge = document.getElementById('cartBadge');
+      const itemsContainer = document.getElementById('cartItems');
+      const emptyState = document.getElementById('cartEmpty');
+      const footer = document.getElementById('cartFooter');
+      const subtotalEl = document.getElementById('cartSubtotal');
+      const deliveryEl = document.getElementById('cartDelivery');
+      const deliveryRow = document.getElementById('deliveryRow');
+      const totalEl = document.getElementById('cartTotal');
+
+      // Actualizar badge
+      const totalItems = cart.items.reduce((sum, item) => sum + item.cantidad, 0);
+      if (totalItems > 0) {
+        badge.textContent = totalItems;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      // Mostrar/ocultar contenido
+      if (cart.items.length === 0) {
+        emptyState.classList.remove('hidden');
+        itemsContainer.classList.add('hidden');
+        footer.classList.add('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        itemsContainer.classList.remove('hidden');
+        footer.classList.remove('hidden');
+
+        // Renderizar items
+        itemsContainer.innerHTML = cart.items.map(item => `
+          <div class="flex gap-3 bg-[#1f1f1f] p-3 rounded-lg">
+            ${item.imagen_url ? `
+              <img src="${item.imagen_url}" alt="${item.nombre}" class="w-16 h-16 object-cover rounded-lg">
+            ` : `
+              <div class="w-16 h-16 bg-[#2a2a2a] rounded-lg flex items-center justify-center">
+                <i data-lucide="utensils" class="w-6 h-6 text-[#4a4a4a]"></i>
+              </div>
+            `}
+            <div class="flex-1 min-w-0">
+              <p class="font-medium truncate">${item.nombre}</p>
+              <p class="text-sm text-[#9ca3af]">${currentTenant.moneda}${item.precio.toFixed(2)} c/u</p>
+              <div class="flex items-center gap-2 mt-2">
+                <button onclick="updateQuantity('${item.id}', -1)" class="w-7 h-7 flex items-center justify-center bg-[#2a2a2a] rounded hover:bg-[#3a3a3a]">
+                  <i data-lucide="minus" class="w-4 h-4"></i>
+                </button>
+                <span class="w-8 text-center">${item.cantidad}</span>
+                <button onclick="updateQuantity('${item.id}', 1)" class="w-7 h-7 flex items-center justify-center bg-[#2a2a2a] rounded hover:bg-[#3a3a3a]">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold">${currentTenant.moneda}${(item.precio * item.cantidad).toFixed(2)}</p>
+              <button onclick="removeItem('${item.id}')" class="text-[#ef4444] hover:text-[#dc2626] mt-2">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        // Actualizar totales
+        subtotalEl.textContent = `${currentTenant.moneda}${cart.subtotal.toFixed(2)}`;
+        deliveryEl.textContent = `${currentTenant.moneda}${cart.delivery.toFixed(2)}`;
+        totalEl.textContent = `${currentTenant.moneda}${cart.total.toFixed(2)}`;
+
+        // Mostrar/ocultar fila de delivery
+        if (cart.delivery > 0) {
+          deliveryRow.classList.remove('hidden');
+        } else {
+          deliveryRow.classList.add('hidden');
+        }
+
+        lucide.createIcons();
+      }
+    }
+
+    window.updateQuantity = function(productId, delta) {
+      window.carrito.updateQuantity(productId, delta);
+      updateCartUI();
+    };
+
+    window.removeItem = function(productId) {
+      window.carrito.removeItem(productId);
+      updateCartUI();
+    };
+
+    // Abrir/cerrar carrito
+    document.getElementById('cartBtn').addEventListener('click', () => {
+      updateCartUI(); // Actualizar UI al abrir para reflejar delivery
+      document.getElementById('cartOverlay').classList.add('open');
+      document.getElementById('cartSidebar').classList.add('open');
+    });
+
+    document.getElementById('closeCart').addEventListener('click', closeCart);
+    document.getElementById('cartOverlay').addEventListener('click', closeCart);
+
+    function closeCart() {
+      document.getElementById('cartOverlay').classList.remove('open');
+      document.getElementById('cartSidebar').classList.remove('open');
+    }
+
+    // Modal de pedido
+    document.getElementById('checkoutBtn').addEventListener('click', () => {
+      closeCart();
+      document.getElementById('orderModal').classList.remove('hidden');
+      currentStep = 1;
+      showStep(1);
+    });
+
+    document.getElementById('closeOrderModal').addEventListener('click', () => {
+      document.getElementById('orderModal').classList.add('hidden');
+      resetOrderForm();
+    });
+
+    document.getElementById('orderModalOverlay').addEventListener('click', () => {
+      document.getElementById('orderModal').classList.add('hidden');
+      if (currentStep !== 4) {
+        resetOrderForm();
+      }
+    });
+
+    // Paso 1: Tipo de entrega
+    document.querySelectorAll('.delivery-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remover selección previa
+        document.querySelectorAll('.delivery-option').forEach(b => {
+          b.classList.remove('border-[#f97316]');
+          b.classList.add('border-transparent');
+        });
+        // Agregar selección actual
+        btn.classList.remove('border-transparent');
+        btn.classList.add('border-[#f97316]');
+
+        orderData.tipo_entrega = btn.dataset.value;
+        orderData.delivery = btn.dataset.value === 'delivery' ? (currentTenant.costo_delivery || 50) : 0;
+        window.carrito.setDelivery(orderData.delivery);
+        showStep(2);
+      });
+    });
+
+    // Paso 2: Método de pago
+    document.getElementById('backToStep1').addEventListener('click', () => showStep(1));
+
+    document.querySelectorAll('.payment-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remover selección previa
+        document.querySelectorAll('.payment-option').forEach(b => {
+          b.classList.remove('border-[#f97316]');
+          b.classList.add('border-transparent');
+        });
+        // Agregar selección actual
+        btn.classList.remove('border-transparent');
+        btn.classList.add('border-[#f97316]');
+
+        orderData.metodo_pago = btn.dataset.value;
+        showStep(3);
+        // Mostrar/ocultar campo de dirección
+        const addressContainer = document.getElementById('addressContainer');
+        const addressInput = document.getElementById('customerAddress');
+        if (orderData.tipo_entrega === 'delivery') {
+          addressContainer.classList.remove('hidden');
+          addressInput.required = true;
+        } else {
+          addressContainer.classList.add('hidden');
+          addressInput.required = false;
+        }
+      });
+    });
+
+    // Paso 3: Datos del cliente
+    document.getElementById('backToStep2').addEventListener('click', () => showStep(2));
+
+    document.getElementById('customerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const customerData = {
+        nombre: document.getElementById('customerName').value,
+        telefono: document.getElementById('customerPhone').value,
+        direccion: document.getElementById('customerAddress').value,
+        notas: document.getElementById('orderNotes').value
+      };
+
+      const cart = window.carrito.getCart();
+
+      // Generar mensaje de WhatsApp
+      const mensaje = generarMensajeWhatsApp(customerData, cart);
+      const whatsappUrl = `https://wa.me/${currentTenant.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(mensaje)}`;
+
+      // Mostrar resumen
+      document.getElementById('orderSummary').innerHTML = `
+        <div class="flex justify-between">
+          <span>Cliente:</span>
+          <span>${customerData.nombre}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Teléfono:</span>
+          <span>${customerData.telefono}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Entrega:</span>
+          <span>${orderData.tipo_entrega === 'delivery' ? 'Delivery' : 'Retirar en local'}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Pago:</span>
+          <span>${orderData.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'}</span>
+        </div>
+        <div class="flex justify-between border-t border-[#2a2a2a] pt-1 mt-1">
+          <span>Total:</span>
+          <span class="font-semibold text-[#f97316]">${currentTenant.moneda}${cart.total.toFixed(2)}</span>
+        </div>
+      `;
+
+      document.getElementById('whatsappLink').href = whatsappUrl;
+
+      showStep(4);
+
+      // Limpiar carrito después de completar el pedido
+      window.carrito.clear();
+      updateCartUI();
+
+      // Abrir WhatsApp automáticamente después de 1 segundo
+      setTimeout(() => {
+        window.open(whatsappUrl, '_blank');
+      }, 1000);
+
+      // Auto-cerrar modal después de 3 segundos
+      setTimeout(() => {
+        document.getElementById('orderModal').classList.add('hidden');
+        resetOrderForm();
+      }, 3000);
+    });
+
+    function showStep(step) {
+      currentStep = step;
+      ['step1', 'step2', 'step3', 'step4'].forEach((id, i) => {
+        document.getElementById(id).classList.toggle('hidden', i + 1 !== step);
+      });
+    }
+
+    function resetOrderForm() {
+      // Reiniciar datos del pedido
+      orderData = {
+        tipo_entrega: null,
+        metodo_pago: null,
+        delivery: 0
+      };
+
+      // Limpiar selecciones de UI
+      document.querySelectorAll('.delivery-option, .payment-option').forEach(btn => {
+        btn.classList.remove('border-[#f97316]');
+        btn.classList.add('border-transparent');
+      });
+
+      // Limpiar formulario
+      document.getElementById('customerForm').reset();
+      document.getElementById('addressContainer').classList.add('hidden');
+      document.getElementById('customerAddress').required = false;
+
+      // Volver al paso 1
+      showStep(1);
+    }
+
+    function generarMensajeWhatsApp(cliente, pedido) {
+      const moneda = currentTenant.moneda || 'RD$';
+      const items = pedido.items.map(item =>
+        `- ${item.cantidad}x ${item.nombre} — ${moneda}${(item.precio * item.cantidad).toFixed(2)}`
+      ).join('\n');
+
+      let mensaje = `${currentTenant.nombre} — Nuevo Pedido
+
+👤 Cliente: ${cliente.nombre}
+📞 Teléfono: ${cliente.telefono}
+🚚 Entrega: ${orderData.tipo_entrega === 'delivery' ? `Delivery (+${moneda}${orderData.delivery})` : 'Retirar en local'}
+💳 Pago: ${orderData.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia Bancaria'}
+
+📝 Pedido:
+${items}
+
+💰 Subtotal: ${moneda}${pedido.subtotal.toFixed(2)}
+🛵 Delivery: ${moneda}${orderData.delivery.toFixed(2)}
+*TOTAL: ${moneda}${pedido.total.toFixed(2)}*`;
+
+      if (cliente.direccion) {
+        mensaje += `\n\n📍 Dirección: ${cliente.direccion}`;
+      }
+
+      if (cliente.notas) {
+        mensaje += `\n\n📌 Notas: ${cliente.notas}`;
+      }
+
+      if (orderData.tipo_entrega === 'delivery') {
+        mensaje += `\n\n_Enviaré mi ubicación por WhatsApp después de este mensaje._`;
+      }
+
+      return mensaje;
+    }
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>

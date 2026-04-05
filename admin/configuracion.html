@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración | Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <style>
+    .color-preview {
+      width: 100%;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid #2a2a2a;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-[#0a0a0a] text-[#f5f5f5]">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-[#f97316] rounded-lg flex items-center justify-center">
+          <i data-lucide="utensils" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <p class="font-display text-lg">Fast Orden</p>
+          <p class="text-xs text-[#9ca3af]">Admin Portal</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="index.html" class="sidebar-link">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="productos.html" class="sidebar-link">
+        <i data-lucide="package"></i>
+        <span>Productos</span>
+      </a>
+      <a href="categorias.html" class="sidebar-link">
+        <i data-lucide="tags"></i>
+        <span>Categorías</span>
+      </a>
+      <a href="ofertas.html" class="sidebar-link">
+        <i data-lucide="tag"></i>
+        <span>Ofertas</span>
+      </a>
+      <a href="cuentas.html" class="sidebar-link">
+        <i data-lucide="building-2"></i>
+        <span>Cuentas Bancarias</span>
+      </a>
+      <a href="configuracion.html" class="sidebar-link active">
+        <i data-lucide="settings"></i>
+        <span>Configuración</span>
+      </a>
+    </nav>
+
+    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#2a2a2a]">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-8 h-8 bg-[#1f1f1f] rounded-full flex items-center justify-center">
+          <i data-lucide="user" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p id="userName" class="text-sm font-medium truncate">Cargando...</p>
+        </div>
+      </div>
+      <button id="logoutBtn" class="btn btn-ghost w-full justify-start">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="font-display text-3xl">Configuración</h1>
+      <p class="text-[#9ca3af]">Personaliza tu menú digital</p>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <!-- Formulario -->
+      <div class="xl:col-span-2 space-y-6">
+        <!-- Información del Negocio -->
+        <div class="card p-6">
+          <h2 class="font-display text-xl mb-6 flex items-center gap-2">
+            <i data-lucide="store" class="w-5 h-5 text-[#f97316]"></i>
+            Información del Negocio
+          </h2>
+
+          <div class="space-y-5">
+            <div>
+              <label class="form-label">Nombre del Negocio *</label>
+              <input type="text" id="businessName" class="form-input" required>
+            </div>
+
+            <div>
+              <label class="form-label">Slogan</label>
+              <input type="text" id="businessSlogan" class="form-input" placeholder="Tu eslogan aquí...">
+            </div>
+
+            <div>
+              <label class="form-label">WhatsApp de Pedidos *</label>
+              <div class="relative">
+                <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#22c55e]"></i>
+                <input type="tel" id="businessWhatsapp" class="form-input pl-12" placeholder="8090000000" required>
+              </div>
+              <p class="text-xs text-[#9ca3af] mt-1">Número donde recibirás los pedidos por WhatsApp</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Moneda</label>
+                <select id="businessCurrency" class="form-input">
+                  <option value="RD$">RD$ - Peso Dominicano</option>
+                  <option value="USD">$ - Dólar</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Costo de Delivery</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9ca3af]">$</span>
+                  <input type="number" id="businessDelivery" class="form-input pl-10" min="0" step="0.01">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apariencia -->
+        <div class="card p-6">
+          <h2 class="font-display text-xl mb-6 flex items-center gap-2">
+            <i data-lucide="palette" class="w-5 h-5 text-[#f97316]"></i>
+            Apariencia
+          </h2>
+
+          <div class="space-y-5">
+            <!-- Logo -->
+            <div>
+              <label class="form-label">Logo</label>
+              <div id="logoPreview" class="hidden mb-3 w-32 h-32 bg-[#1f1f1f] rounded-xl overflow-hidden">
+                <img id="previewLogoImg" src="" alt="Logo" class="w-full h-full object-contain">
+              </div>
+              <div class="flex gap-3">
+                <input type="file" id="logoInput" accept="image/*" class="hidden">
+                <button type="button" id="selectLogoBtn" class="btn btn-secondary btn-sm">
+                  <i data-lucide="image-plus" class="w-4 h-4"></i>
+                  <span id="logoBtnText">Subir logo</span>
+                </button>
+                <button type="button" id="removeLogoBtn" class="btn btn-ghost btn-sm text-[#ef4444] hidden">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Colores -->
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <label class="form-label">Color Primario</label>
+                <div class="flex items-center gap-3">
+                  <input type="color" id="primaryColor" class="w-16 h-10 rounded cursor-pointer">
+                  <input type="text" id="primaryColorHex" class="form-input flex-1" placeholder="#f97316">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Color de Acento</label>
+                <div class="flex items-center gap-3">
+                  <input type="color" id="accentColor" class="w-16 h-10 rounded cursor-pointer">
+                  <input type="text" id="accentColorHex" class="form-input flex-1" placeholder="#facc15">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón Guardar -->
+        <div class="flex gap-4">
+          <button id="resetBtn" type="button" class="btn btn-secondary">
+            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+            <span>Restablecer</span>
+          </button>
+          <button id="saveBtn" class="btn btn-primary flex-1">
+            <span id="saveBtnText">Guardar Cambios</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="xl:col-span-1">
+        <div class="sticky top-24">
+          <h3 class="font-display text-lg mb-4">Vista Previa</h3>
+
+          <div id="previewCard" class="card overflow-hidden">
+            <!-- Header Preview -->
+            <div id="previewHeader" class="p-6 text-center">
+              <div id="previewLogoContainer" class="w-16 h-16 mx-auto mb-3 rounded-full bg-[#1f1f1f] flex items-center justify-center hidden">
+                <img id="previewLogo" src="" alt="" class="w-full h-full object-cover rounded-full">
+              </div>
+              <h4 id="previewName" class="font-display text-2xl">Tu Negocio</h4>
+              <p id="previewSlogan" class="text-sm text-[#9ca3af] mt-1">Tu slogan aquí</p>
+            </div>
+
+            <!-- Product Card Preview -->
+            <div class="p-4 bg-[#1f1f1f]">
+              <div class="bg-[#141414] rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-16 h-16 bg-[#2a2a2a] rounded-lg flex items-center justify-center">
+                    <i data-lucide="utensils" class="w-6 h-6 text-[#4a4a4a]"></i>
+                  </div>
+                  <div class="flex-1">
+                    <p class="font-medium">Producto de Ejemplo</p>
+                    <p class="text-sm text-[#9ca3af]">Descripción del producto</p>
+                  </div>
+                  <div class="text-right">
+                    <p id="previewPrice" class="font-display text-xl">RD$250</p>
+                    <button id="previewButton" class="mt-2 px-3 py-1 rounded-lg text-sm text-white">Agregar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 p-4 bg-[#1f1f1f] rounded-xl">
+            <p class="text-sm text-[#9ca3af] mb-2">URL de tu menú:</p>
+            <div class="flex gap-2">
+              <input type="text" id="menuUrl" readonly class="form-input text-sm bg-[#0a0a0a]">
+              <button id="copyUrlBtn" class="btn btn-secondary btn-sm">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-[#22c55e] text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-[300] flex items-center gap-2">
+    <i data-lucide="check-circle" class="w-5 h-5"></i>
+    <span id="toastMessage">Cambios guardados</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../assets/js/supabase.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    let tenantId = null;
+    let currentTenant = null;
+    let selectedLogo = null;
+    let currentLogoUrl = null;
+
+    async function init() {
+      const profile = await window.auth.protectAdminRoute();
+      if (!profile) return;
+
+      document.getElementById('userName').textContent = profile.nombre;
+      tenantId = sessionStorage.getItem('tenant_id');
+      currentTenant = profile.tenants;
+
+      if (currentTenant) {
+        loadTenantData();
+        updatePreview();
+      }
+
+      lucide.createIcons();
+    }
+
+    function loadTenantData() {
+      // Campos del formulario
+      document.getElementById('businessName').value = currentTenant.nombre || '';
+      document.getElementById('businessSlogan').value = currentTenant.slogan || '';
+      document.getElementById('businessWhatsapp').value = currentTenant.whatsapp || '';
+      document.getElementById('businessCurrency').value = currentTenant.moneda || 'RD$';
+      document.getElementById('businessDelivery').value = currentTenant.costo_delivery || 50;
+
+      // Colores
+      document.getElementById('primaryColor').value = currentTenant.color_primary || '#f97316';
+      document.getElementById('primaryColorHex').value = currentTenant.color_primary || '#f97316';
+      document.getElementById('accentColor').value = currentTenant.color_accent || '#facc15';
+      document.getElementById('accentColorHex').value = currentTenant.color_accent || '#facc15';
+
+      // Logo
+      if (currentTenant.logo_url) {
+        currentLogoUrl = currentTenant.logo_url;
+        document.getElementById('previewLogoImg').src = currentTenant.logo_url;
+        document.getElementById('previewLogo').src = currentTenant.logo_url;
+        document.getElementById('logoPreview').classList.remove('hidden');
+        document.getElementById('previewLogoContainer').classList.remove('hidden');
+        document.getElementById('removeLogoBtn').classList.remove('hidden');
+        document.getElementById('logoBtnText').textContent = 'Cambiar logo';
+      }
+
+      // URL
+      const baseUrl = window.location.origin;
+      document.getElementById('menuUrl').value = `${baseUrl}/menu.html?tenant=${currentTenant.slug}`;
+    }
+
+    function updatePreview() {
+      const nombre = document.getElementById('businessName').value || 'Tu Negocio';
+      const slogan = document.getElementById('businessSlogan').value || 'Tu slogan aquí';
+      const moneda = document.getElementById('businessCurrency').value || 'RD$';
+      const primaryColor = document.getElementById('primaryColor').value || '#f97316';
+
+      document.getElementById('previewName').textContent = nombre;
+      document.getElementById('previewSlogan').textContent = slogan;
+      document.getElementById('previewPrice').textContent = `${moneda}250`;
+      document.getElementById('previewButton').style.backgroundColor = primaryColor;
+      document.getElementById('previewName').style.color = primaryColor;
+    }
+
+    // Event listeners para preview en tiempo real
+    ['businessName', 'businessSlogan', 'businessCurrency'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updatePreview);
+    });
+
+    // Color pickers
+    document.getElementById('primaryColor').addEventListener('input', (e) => {
+      document.getElementById('primaryColorHex').value = e.target.value;
+      updatePreview();
+    });
+
+    document.getElementById('primaryColorHex').addEventListener('input', (e) => {
+      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+        document.getElementById('primaryColor').value = e.target.value;
+        updatePreview();
+      }
+    });
+
+    document.getElementById('accentColor').addEventListener('input', (e) => {
+      document.getElementById('accentColorHex').value = e.target.value;
+    });
+
+    document.getElementById('accentColorHex').addEventListener('input', (e) => {
+      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+        document.getElementById('accentColor').value = e.target.value;
+      }
+    });
+
+    // Logo upload
+    document.getElementById('selectLogoBtn').addEventListener('click', () => {
+      document.getElementById('logoInput').click();
+    });
+
+    document.getElementById('logoInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        selectedLogo = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('previewLogoImg').src = e.target.result;
+          document.getElementById('previewLogo').src = e.target.result;
+          document.getElementById('logoPreview').classList.remove('hidden');
+          document.getElementById('previewLogoContainer').classList.remove('hidden');
+          document.getElementById('removeLogoBtn').classList.remove('hidden');
+          document.getElementById('logoBtnText').textContent = 'Cambiar logo';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('removeLogoBtn').addEventListener('click', () => {
+      selectedLogo = null;
+      currentLogoUrl = null;
+      document.getElementById('logoInput').value = '';
+      document.getElementById('logoPreview').classList.add('hidden');
+      document.getElementById('previewLogoContainer').classList.add('hidden');
+      document.getElementById('removeLogoBtn').classList.add('hidden');
+      document.getElementById('logoBtnText').textContent = 'Subir logo';
+    });
+
+    // Restablecer
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      loadTenantData();
+      updatePreview();
+    });
+
+    // Copiar URL
+    document.getElementById('copyUrlBtn').addEventListener('click', () => {
+      const url = document.getElementById('menuUrl').value;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('URL copiada al portapapeles');
+      });
+    });
+
+    // Guardar
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const nombre = document.getElementById('businessName').value;
+      const slogan = document.getElementById('businessSlogan').value;
+      const whatsapp = document.getElementById('businessWhatsapp').value;
+      const moneda = document.getElementById('businessCurrency').value;
+      const costo_delivery = parseFloat(document.getElementById('businessDelivery').value) || 0;
+      const color_primary = document.getElementById('primaryColor').value;
+      const color_accent = document.getElementById('accentColor').value;
+
+      if (!nombre || !whatsapp) {
+        showToast('Completa los campos requeridos', 'error');
+        return;
+      }
+
+      document.getElementById('saveBtn').disabled = true;
+      document.getElementById('saveBtnText').textContent = 'Guardando...';
+
+      try {
+        let logo_url = currentLogoUrl;
+
+        // Subir logo si hay uno nuevo
+        if (selectedLogo) {
+          const fileExt = selectedLogo.name.split('.').pop();
+          const fileName = `logo-${Date.now()}.${fileExt}`;
+          const filePath = `${tenantId}/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('tenant-assets')
+            .upload(filePath, selectedLogo);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('tenant-assets')
+            .getPublicUrl(filePath);
+
+          logo_url = publicUrl;
+        }
+
+        // Actualizar tenant
+        const { error } = await supabase
+          .from('tenants')
+          .update({
+            nombre,
+            slogan,
+            whatsapp,
+            moneda,
+            costo_delivery,
+            color_primary,
+            color_accent,
+            logo_url
+          })
+          .eq('id', tenantId);
+
+        if (error) throw error;
+
+        // Actualizar tenant actual
+        currentTenant = { ...currentTenant, ...{ nombre, slogan, whatsapp, moneda, costo_delivery, color_primary, color_accent, logo_url } };
+
+        showToast('Cambios guardados exitosamente');
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('Error al guardar', 'error');
+      } finally {
+        document.getElementById('saveBtn').disabled = false;
+        document.getElementById('saveBtnText').textContent = 'Guardar Cambios';
+      }
+    });
+
+    // Toast
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      toastMessage.textContent = message;
+      toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-[300] flex items-center gap-2 ${
+        type === 'success' ? 'bg-[#22c55e] text-white' : 'bg-[#ef4444] text-white'
+      }`;
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>

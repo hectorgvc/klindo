@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión | Fast Orden</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="bg-[#0a0a0a] text-[#f5f5f5] font-body min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="w-20 h-20 bg-[#f97316] rounded-2xl mx-auto mb-4 flex items-center justify-center">
+        <i data-lucide="utensils" class="w-10 h-10 text-white"></i>
+      </div>
+      <h1 class="font-display text-4xl">Fast Orden</h1>
+      <p class="text-[#9ca3af] mt-2">Portal de Administración</p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-8">
+      <h2 class="font-display text-2xl text-center mb-6">Iniciar Sesión</h2>
+
+      <form id="loginForm" class="space-y-5">
+        <div>
+          <label class="form-label">Correo electrónico</label>
+          <div class="relative">
+            <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
+            <input type="email" id="email" required
+              class="form-input pl-12"
+              placeholder="tu@email.com">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Contraseña</label>
+          <div class="relative">
+            <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
+            <input type="password" id="password" required
+              class="form-input pl-12"
+              placeholder="••••••••">
+            <button type="button" id="togglePassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-white">
+              <i data-lucide="eye" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="errorMessage" class="hidden bg-[#ef4444]/10 border border-[#ef4444] text-[#ef4444] px-4 py-3 rounded-lg flex items-center gap-2">
+          <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+          <span id="errorText"></span>
+        </div>
+
+        <button type="submit" id="loginBtn" class="btn btn-primary w-full">
+          <span id="btnText">Iniciar Sesión</span>
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <p class="text-center text-[#9ca3af] text-sm mt-6">
+      © 2025 Fast Orden. Todos los derechos reservados.
+    </p>
+  </div>
+
+  <!-- Scripts -->
+  <script src="assets/js/supabase.js"></script>
+  <script>
+    lucide.createIcons();
+
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const btnText = document.getElementById('btnText');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    // Mostrar/ocultar contraseña
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      togglePassword.innerHTML = type === 'password' ? '<i data-lucide="eye" class="w-5 h-5"></i>' : '<i data-lucide="eye-off" class="w-5 h-5"></i>';
+      lucide.createIcons();
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // Ocultar error previo
+      errorMessage.classList.add('hidden');
+
+      // Loading state
+      loginBtn.disabled = true;
+      btnText.textContent = 'Iniciando sesión...';
+
+      try {
+        // Login con Supabase
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) throw error;
+
+        // Obtener perfil del usuario
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*, tenants(*)')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        if (!profile) {
+          throw new Error('Perfil no encontrado');
+        }
+
+        // Verificar si el usuario está activo
+        if (!profile.activo) {
+          await supabase.auth.signOut();
+          throw new Error('Usuario inactivo. Contacta al soporte.');
+        }
+
+        // Guardar en sessionStorage
+        sessionStorage.setItem('user_role', profile.rol);
+        sessionStorage.setItem('user_name', profile.nombre);
+
+        // Redirigir según rol
+        if (profile.rol === 'superadmin') {
+          sessionStorage.setItem('tenant_id', 'null');
+          window.location.href = '/superadmin/index.html';
+        } else if (profile.rol === 'admin') {
+          // Verificar tenant activo
+          if (profile.tenants && !profile.tenants.activo) {
+            await supabase.auth.signOut();
+            throw new Error('El negocio está inactivo. Contacta al soporte.');
+          }
+
+          // Guardar tenant_id
+          sessionStorage.setItem('tenant_id', profile.tenant_id);
+
+          // Verificar plan vencido
+          const planVencido = profile.tenants?.plan_expira_at && new Date(profile.tenants.plan_expira_at) < new Date();
+          if (planVencido) {
+            sessionStorage.setItem('plan_vencido', 'true');
+          }
+
+          window.location.href = '/admin/index.html';
+        } else {
+          throw new Error('Rol no válido');
+        }
+
+      } catch (error) {
+        console.error('Error de login:', error);
+        errorText.textContent = error.message || 'Error al iniciar sesión';
+        errorMessage.classList.remove('hidden');
+      } finally {
+        loginBtn.disabled = false;
+        btnText.textContent = 'Iniciar Sesión';
+      }
+    });
+
+    // Verificar si hay error en URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error) {
+      if (error === 'plan_vencido') {
+        errorText.textContent = 'Tu plan ha vencido. Contacta al soporte para renovar.';
+      } else if (error === 'unauthorized') {
+        errorText.textContent = 'No tienes permisos para acceder a esa área.';
+      } else {
+        errorText.textContent = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
+      }
+      errorMessage.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
