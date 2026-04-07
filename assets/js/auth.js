@@ -1,13 +1,12 @@
 // Auth.js - Lógica de autenticación y redirección para Fast Orden
-
-const supabase = window.supabaseClient;
+// Usar window.window.supabaseClient directamente para evitar redeclaración
 
 /**
  * Iniciar sesión con email y contraseña
  */
 async function login(email, password) {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
       email,
       password
     });
@@ -15,7 +14,7 @@ async function login(email, password) {
     if (error) throw error;
 
     // Obtener perfil del usuario para determinar rol
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await window.supabaseClient
       .from('profiles')
       .select('*, tenants(*)')
       .eq('id', data.user.id)
@@ -29,7 +28,7 @@ async function login(email, password) {
 
     // Verificar si el usuario está activo
     if (!profile.activo) {
-      await supabase.auth.signOut();
+      await window.supabaseClient.auth.signOut();
       throw new Error('Usuario inactivo. Contacta al soporte.');
     }
 
@@ -48,7 +47,7 @@ async function login(email, password) {
     } else if (profile.rol === 'admin') {
       // Verificar si el tenant está activo
       if (profile.tenants && !profile.tenants.activo) {
-        await supabase.auth.signOut();
+        await window.supabaseClient.auth.signOut();
         throw new Error('El negocio está inactivo. Contacta al soporte.');
       }
 
@@ -76,7 +75,7 @@ async function login(email, password) {
  */
 async function logout() {
   try {
-    await supabase.auth.signOut();
+    await window.supabaseClient.auth.signOut();
     sessionStorage.clear();
     window.location.href = '/login.html';
   } catch (error) {
@@ -88,7 +87,7 @@ async function logout() {
  * Obtener sesión actual
  */
 async function getSession() {
-  const { data: { session }, error } = await supabase.auth.getSession();
+  const { data: { session }, error } = await window.supabaseClient.auth.getSession();
   return { session, error };
 }
 
@@ -96,10 +95,10 @@ async function getSession() {
  * Obtener perfil del usuario actual
  */
 async function getCurrentProfile() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
   if (!session) return null;
 
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await window.supabaseClient
     .from('profiles')
     .select('*, tenants(*)')
     .eq('id', session.user.id)
@@ -117,7 +116,7 @@ async function getCurrentProfile() {
  * Proteger rutas admin - debe llamarse al inicio de cada página /admin/*
  */
 async function protectAdminRoute() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
 
   if (!session) {
     window.location.href = '/login.html';
@@ -165,7 +164,7 @@ async function protectAdminRoute() {
  * Proteger rutas superadmin - debe llamarse al inicio de cada página /superadmin/*
  */
 async function protectSuperadminRoute() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await window.supabaseClient.auth.getSession();
 
   if (!session) {
     window.location.href = '/login.html';
@@ -188,7 +187,7 @@ async function protectSuperadminRoute() {
 async function puedeAgregarProducto(tenantId, plan) {
   if (plan === 'pro') return { canAdd: true };
 
-  const { count, error } = await supabase
+  const { count, error } = await window.supabaseClient
     .from('productos')
     .select('*', { count: 'exact', head: true })
     .eq('tenant_id', tenantId);

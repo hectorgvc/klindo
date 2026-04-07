@@ -343,7 +343,7 @@
 
     // Cargar categorías
     async function loadCategories() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('categorias')
         .select('*')
         .eq('tenant_id', currentTenant.id)
@@ -361,7 +361,7 @@
 
     // Cargar productos
     async function loadProducts() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('productos')
         .select('*, categorias(nombre)')
         .eq('tenant_id', currentTenant.id)
@@ -379,7 +379,7 @@
 
     // Cargar ofertas
     async function loadOfertas() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('ofertas')
         .select('*')
         .eq('tenant_id', currentTenant.id)

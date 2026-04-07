@@ -1,13 +1,13 @@
 // tenant-theme.js - Aplicar tema visual del tenant dinámicamente
 
-const supabase = window.supabaseClient;
+const window.supabaseClient = window.window.supabaseClient;
 
 /**
  * Cargar tenant por slug
  */
 async function loadTenantBySlug(slug) {
   try {
-    const { data: tenant, error } = await supabase
+    const { data: tenant, error } = await window.supabaseClient
       .from('tenants')
       .select('*')
       .eq('slug', slug)
@@ -29,7 +29,7 @@ async function loadTenantBySlug(slug) {
  */
 async function loadTenantById(tenantId) {
   try {
-    const { data: tenant, error } = await supabase
+    const { data: tenant, error } = await window.supabaseClient
       .from('tenants')
       .select('*')
       .eq('id', tenantId)

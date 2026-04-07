@@ -209,7 +209,7 @@
     }
 
     async function loadCuentas() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('cuentas_bancarias')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -281,7 +281,7 @@
 
     // Toggle activa
     window.toggleActiva = async function(id, activa) {
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('cuentas_bancarias')
         .update({ activa })
         .eq('id', id)
@@ -347,7 +347,7 @@
 
       try {
         if (editingId) {
-          const { error } = await supabase
+          const { error } = await supabaseClient
             .from('cuentas_bancarias')
             .update(cuentaData)
             .eq('id', editingId)
@@ -356,7 +356,7 @@
           if (error) throw error;
           showToast('Cuenta actualizada');
         } else {
-          const { error } = await supabase
+          const { error } = await supabaseClient
             .from('cuentas_bancarias')
             .insert(cuentaData);
 
@@ -400,7 +400,7 @@
     document.getElementById('confirmDelete').addEventListener('click', async () => {
       if (!deletingId) return;
 
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('cuentas_bancarias')
         .delete()
         .eq('id', deletingId)

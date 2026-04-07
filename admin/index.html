@@ -269,28 +269,28 @@
       if (!tenantId) return;
 
       // Contar productos
-      const { count: productosCount } = await supabase
+      const { count: productosCount } = await supabaseClient
         .from('productos')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
         .eq('disponible', true);
 
       // Contar categorías
-      const { count: categoriasCount } = await supabase
+      const { count: categoriasCount } = await supabaseClient
         .from('categorias')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
         .eq('activa', true);
 
       // Contar cuentas bancarias
-      const { count: cuentasCount } = await supabase
+      const { count: cuentasCount } = await supabaseClient
         .from('cuentas_bancarias')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
         .eq('activa', true);
 
       // Contar ofertas activas hoy
-      const { data: ofertasData } = await supabase
+      const { data: ofertasData } = await supabaseClient
         .from('ofertas')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -341,7 +341,7 @@
     }
 
     async function getTotalProductos(tenantId) {
-      const { count } = await supabase
+      const { count } = await supabaseClient
         .from('productos')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId);

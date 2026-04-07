@@ -196,7 +196,7 @@
 
     async function loadStats() {
       // Cargar todos los tenants
-      const { data: tenants, error } = await supabase
+      const { data: tenants, error } = await supabaseClient
         .from('tenants')
         .select('*')
         .order('created_at', { ascending: false });

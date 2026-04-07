@@ -3,7 +3,16 @@
     "allow": [
       "Bash(git init:*)",
       "Bash(git remote:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(grep:*)",
+      "Bash(for file in F:/archivos/fastorden/admin/configuracion.html F:/archivos/fastorden/admin/ofertas.html F:/archivos/fastorden/admin/productos.html F:/archivos/fastorden/login.html F:/archivos/fastorden/superadmin/crear-tenant.html)",
+      "Bash(do echo \"=== $file ===\")",
+      "Read(//f/archivos/fastorden/**)",
+      "Bash(done)",
+      "Bash(for file in F:/archivos/fastorden/cocina.html F:/archivos/fastorden/turnos.html F:/archivos/fastorden/orden.html F:/archivos/fastorden/caja.html)",
+      "Bash(for file in F:/archivos/fastorden/admin/dashboard.html F:/archivos/fastorden/admin/notas.html F:/archivos/fastorden/admin/pedidos.html)"
     ]
   }
 }

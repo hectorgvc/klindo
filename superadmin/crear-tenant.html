@@ -256,6 +256,7 @@
   <script src="../assets/js/supabase.js"></script>
   <script src="../assets/js/auth.js"></script>
   <script>
+    // Usar window.window.supabaseClient directamente
     lucide.createIcons();
 
     const EDGE_FUNCTION_URL = 'https://yetdmvlisxavxdwdxyyb.supabase.co/functions/v1/create-admin-user';
@@ -390,7 +391,7 @@
         };
 
         // 2. Crear tenant
-        const { data: tenant, error: tenantError } = await supabase
+        const { data: tenant, error: tenantError } = await window.supabaseClient
           .from('tenants')
           .insert(tenantData)
           .select()
@@ -411,7 +412,7 @@
           tenant_id: tenant.id
         };
 
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await window.window.supabaseClient.auth.getSession();
 
         const response = await fetch(EDGE_FUNCTION_URL, {
           method: 'POST',
@@ -424,7 +425,7 @@
 
         if (!response.ok) {
           // Rollback: eliminar tenant
-          await supabase.from('tenants').delete().eq('id', tenant.id);
+          await window.window.supabaseClient.from('tenants').delete().eq('id', tenant.id);
           const errorData = await response.json();
           throw new Error(errorData.error || 'Error al crear el usuario admin');
         }

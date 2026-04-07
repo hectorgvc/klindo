@@ -189,7 +189,7 @@
     }
 
     async function loadTenants() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('tenants')
         .select('*')
         .order('created_at', { ascending: false });
@@ -333,7 +333,7 @@
         plan_expira_at: document.getElementById('editExpiry').value || null
       };
 
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('tenants')
         .update(updates)
         .eq('id', editingTenantId);

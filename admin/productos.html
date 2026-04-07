@@ -342,6 +342,7 @@
   <script src="../assets/js/supabase.js"></script>
   <script src="../assets/js/auth.js"></script>
   <script>
+    const window.supabaseClient = window.window.supabaseClient;
     lucide.createIcons();
 
     let tenantId = null;
@@ -610,13 +611,13 @@
           const fileName = `${Date.now()}.${fileExt}`;
           const filePath = `${tenantId}/productos/${fileName}`;
 
-          const { error: uploadError } = await supabase.storage
+          const { error: uploadError } = await window.supabaseClient.storage
             .from('tenant-assets')
             .upload(filePath, selectedImage);
 
           if (uploadError) throw uploadError;
 
-          const { data: { publicUrl } } = supabase.storage
+          const { data: { publicUrl } } = window.supabaseClient.storage
             .from('tenant-assets')
             .getPublicUrl(filePath);
 

@@ -199,7 +199,7 @@
     }
 
     async function loadProductos() {
-      const { data } = await supabase
+      const { data } = await supabaseClient
         .from('productos')
         .select('categoria_id')
         .eq('tenant_id', tenantId);
@@ -208,7 +208,7 @@
     }
 
     async function loadCategorias() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('categorias')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -276,7 +276,7 @@
 
     // Toggle activa
     window.toggleActiva = async function(id, activa) {
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('categorias')
         .update({ activa })
         .eq('id', id)
@@ -343,7 +343,7 @@
         };
 
         if (editingId) {
-          const { error } = await supabase
+          const { error } = await supabaseClient
             .from('categorias')
             .update(categoriaData)
             .eq('id', editingId)
@@ -352,7 +352,7 @@
           if (error) throw error;
           showToast('Categoría actualizada');
         } else {
-          const { error } = await supabase
+          const { error } = await supabaseClient
             .from('categorias')
             .insert(categoriaData);
 
@@ -400,7 +400,7 @@
     document.getElementById('confirmDelete').addEventListener('click', async () => {
       if (!deletingId) return;
 
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('categorias')
         .delete()
         .eq('id', deletingId)

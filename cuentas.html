@@ -65,6 +65,7 @@
   <script src="assets/js/supabase.js"></script>
   <script src="assets/js/tenant-theme.js"></script>
   <script>
+    const window.supabaseClient = window.window.supabaseClient;
     lucide.createIcons();
 
     let currentTenant = null;
@@ -115,7 +116,7 @@
     }
 
     async function loadCuentas() {
-      const { data, error } = await supabase
+      const { data, error } = await window.supabaseClient
         .from('cuentas_bancarias')
         .select('*')
         .eq('tenant_id', currentTenant.id)

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turnos | Fast Orden Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <style>
+    body {
+      overflow: hidden;
+      background: #0a0a0a;
+    }
+    .pantalla-tv {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem;
+    }
+    .numero-turno {
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem;
+      border-radius: 1rem;
+      font-weight: bold;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .estado-preparacion {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      animation: pulse-preparacion 2s infinite;
+    }
+    @keyframes pulse-preparacion {
+      0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(245, 158, 11, 0.8); }
+    }
+    .estado-listo {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      animation: pulse-listo 1s infinite, bounce-listo 0.5s ease;
+    }
+    @keyframes pulse-listo {
+      0%, 100% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.6); }
+      50% { box-shadow: 0 0 60px rgba(34, 197, 94, 1); }
+    }
+    @keyframes bounce-listo {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .numero-nuevo {
+      animation: slideInNumero 0.6s ease;
+    }
+    @keyframes slideInNumero {
+      0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+      70% { transform: scale(1.1) rotate(10deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .numero-saliente {
+      animation: fadeOutNumero 0.5s ease forwards;
+    }
+    @keyframes fadeOutNumero {
+      to { transform: scale(0) rotate(180deg); opacity: 0; }
+    }
+    .logo-tenant {
+      max-height: 80px;
+      max-width: 200px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body class="bg-[#0a0a0a] text-[#f5f5f5] font-body">
+  <div id="pantallaTurnos" class="pantalla-tv hidden">
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-8 pb-6 border-b border-[#2a2a2a]">
+      <div class="flex items-center gap-6">
+        <img data-tenant="logo" src="" alt="" class="logo-tenant hidden rounded-xl">
+        <div>
+          <h1 data-tenant="nombre" class="font-display text-5xl">...</h1>
+          <p data-tenant="slogan" class="text-xl text-[#9ca3af] mt-1">...</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <div id="reloj" class="text-4xl font-display">00:00</div>
+        <div id="fecha" class="text-lg text-[#9ca3af]">...</div>
+      </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1">
+      <!-- En Preparación -->
+      <section class="mb-8">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-4 h-4 bg-[#f59e0b] rounded-full animate-pulse"></div>
+          <h2 class="font-display text-3xl text-[#f59e0b]">🟡 EN PREPARACIÓN</h2>
+        </div>
+        <div id="gridPreparacion" class="flex flex-wrap gap-4">
+          <!-- Números se cargan dinámicamente -->
+          <p class="text-[#9ca3af] text-xl py-8">No hay órdenes en preparación</p>
+        </div>
+      </section>
+
+      <!-- Listo para Retirar -->
+      <section class="mb-8">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-4 h-4 bg-[#22c55e] rounded-full animate-pulse"></div>
+          <h2 class="font-display text-3xl text-[#22c55e]">✅ LISTO PARA RETIRAR</h2>
+        </div>
+        <div id="gridListos" class="flex flex-wrap gap-4">
+          <!-- Números se cargan dinámicamente -->
+          <p class="text-[#9ca3af] text-xl py-8">No hay órdenes listas</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto pt-6 border-t border-[#2a2a2a] flex items-center justify-between">
+      <div class="flex items-center gap-2 text-[#9ca3af]">
+        <i data-lucide="zap" class="w-5 h-5"></i>
+        <span>Fast Orden Pro</span>
+      </div>
+      <p class="text-[#9ca3af] text-sm">Actualizado en tiempo real</p>
+    </footer>
+  </div>
+
+  <!-- Alerta si no es plan Pro -->
+  <div id="planAlert" class="fixed inset-0 bg-[#0a0a0a] z-50 hidden flex items-center justify-center p-8">
+    <div class="text-center">
+      <i data-lucide="alert-circle" class="w-24 h-24 mx-auto mb-6 text-[#ef4444]"></i>
+      <h2 class="font-display text-4xl mb-4">Acceso Restringido</h2>
+      <p class="text-[#9ca3af] text-xl">La pantalla de turnos requiere el plan Pro.</p>
+    </div>
+  </div>
+
+  <!-- Error de tenant -->
+  <div id="errorTenant" class="fixed inset-0 bg-[#0a0a0a] z-50 hidden flex items-center justify-center p-8">
+    <div class="text-center">
+      <i data-lucide="store" class="w-24 h-24 mx-auto mb-6 text-[#9ca3af]"></i>
+      <h2 class="font-display text-4xl mb-4">Negocio No Encontrado</h2>
+      <p class="text-[#9ca3af] text-xl">El menú solicitado no existe o está inactivo.</p>
+    </div>
+  </div>
+
+  <script src="assets/js/supabase.js"></script>
+  <script>
+    // Usar window.supabaseClient directamente
+    lucide.createIcons();
+
+    let currentTenant = null;
+    let tenantId = null;
+    let pedidos = [];
+    let channel = null;
+    let numerosAnteriores = { preparacion: [], listos: [] };
+
+    // Reloj y fecha
+    function actualizarReloj() {
+      const now = new Date();
+      document.getElementById('reloj').textContent = now.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      document.getElementById('fecha').textContent = now.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short'
+      });
+    }
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj();
+
+    async function init() {
+      // Obtener tenant del slug
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('tenant');
+
+      if (!slug) {
+        document.getElementById('errorTenant').classList.remove('hidden');
+        return;
+      }
+
+      // Cargar tenant
+      const { data: tenant, error } = await supabaseClient
+        .from('tenants')
+        .select('*')
+        .eq('slug', slug)
+        .eq('activo', true)
+        .single();
+
+      if (error || !tenant) {
+        document.getElementById('errorTenant').classList.remove('hidden');
+        return;
+      }
+
+      currentTenant = tenant;
+      tenantId = tenant.id;
+
+      // Verificar plan Pro
+      if (tenant.plan !== 'pro') {
+        document.getElementById('planAlert').classList.remove('hidden');
+        return;
+      }
+
+      // Mostrar pantalla
+      document.getElementById('pantallaTurnos').classList.remove('hidden');
+
+      // Actualizar datos del tenant
+      document.querySelector('[data-tenant="nombre"]').textContent = tenant.nombre;
+
+      if (tenant.slogan) {
+        document.querySelector('[data-tenant="slogan"]').textContent = tenant.slogan;
+      } else {
+        document.querySelector('[data-tenant="slogan"]').style.display = 'none';
+      }
+
+      if (tenant.logo_url) {
+        const logoEl = document.querySelector('[data-tenant="logo"]');
+        logoEl.src = tenant.logo_url;
+        logoEl.classList.remove('hidden');
+      }
+
+      // Cargar pedidos
+      await cargarPedidos();
+
+      // Suscribirse a cambios
+      suscribirRealtime();
+
+      // Refrescar cada 30 segundos como respaldo
+      setInterval(cargarPedidos, 30000);
+
+      lucide.createIcons();
+    }
+
+    async function cargarPedidos() {
+      const hoy = new Date().toISOString().split('T')[0];
+
+      const { data, error } = await supabaseClient
+        .from('pedidos')
+        .select('id, numero_dia, estado, created_at')
+        .eq('tenant_id', tenantId)
+        .in('estado', ['en_preparacion', 'listo'])
+        .gte('created_at', hoy)
+        .order('numero_dia', { ascending: true });
+
+      if (error) {
+        console.error('Error cargando pedidos:', error);
+        return;
+      }
+
+      pedidos = data || [];
+      renderTurnos(true);
+    }
+
+    function renderTurnos(conAnimacion = false) {
+      const enPreparacion = pedidos.filter(p => p.estado === 'en_preparacion');
+      const listos = pedidos.filter(p => p.estado === 'listo');
+
+      // Guardar números actuales para comparación
+      const numsPrep = enPreparacion.map(p => p.numero_dia);
+      const numsListos = listos.map(p => p.numero_dia);
+
+      // Detectar cambios para animación
+      const nuevosPrep = conAnimacion ? numsPrep.filter(n => !numerosAnteriores.preparacion.includes(n)) : [];
+      const nuevosListos = conAnimacion ? numsListos.filter(n => !numerosAnteriores.listos.includes(n)) : [];
+
+      // Renderizar En Preparación
+      const gridPrep = document.getElementById('gridPreparacion');
+      if (enPreparacion.length === 0) {
+        gridPrep.innerHTML = '<p class="text-[#9ca3af] text-xl py-8">No hay órdenes en preparación</p>';
+      } else {
+        gridPrep.innerHTML = enPreparacion.map(p => {
+          const esNuevo = nuevosPrep.includes(p.numero_dia);
+          return `
+            <div class="numero-turno estado-preparacion ${esNuevo ? 'numero-nuevo' : ''}"
+                 data-id="${p.id}">
+              ${p.numero_dia}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Renderizar Listos
+      const gridListos = document.getElementById('gridListos');
+      if (listos.length === 0) {
+        gridListos.innerHTML = '<p class="text-[#9ca3af] text-xl py-8">No hay órdenes listas</p>';
+      } else {
+        gridListos.innerHTML = listos.map(p => {
+          const esNuevo = nuevosListos.includes(p.numero_dia);
+          return `
+            <div class="numero-turno estado-listo ${esNuevo ? 'numero-nuevo' : ''}"
+                 data-id="${p.id}">
+              ${p.numero_dia}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Guardar estado actual
+      numerosAnteriores = { preparacion: numsPrep, listos: numsListos };
+
+      // Remover clase de animación después de un tiempo
+      if (conAnimacion && (nuevosPrep.length > 0 || nuevosListos.length > 0)) {
+        setTimeout(() => {
+          document.querySelectorAll('.numero-nuevo').forEach(el => {
+            el.classList.remove('numero-nuevo');
+          });
+        }, 1000);
+      }
+    }
+
+    function suscribirRealtime() {
+      channel = supabase
+        .channel('turnos-pedidos')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'pedidos',
+          filter: `tenant_id=eq.${tenantId}`
+        }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            if (['en_preparacion', 'listo'].includes(payload.new.estado)) {
+              pedidos.push(payload.new);
+              renderTurnos(true);
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            const index = pedidos.findIndex(p => p.id === payload.new.id);
+
+            if (['en_preparacion', 'listo'].includes(payload.new.estado)) {
+              if (index === -1) {
+                pedidos.push(payload.new);
+              } else {
+                pedidos[index] = { ...pedidos[index], ...payload.new };
+              }
+            } else {
+              // Quitar si cambió a otro estado
+              if (index !== -1) {
+                pedidos.splice(index, 1);
+              }
+            }
+            renderTurnos(true);
+          } else if (payload.eventType === 'DELETE') {
+            const index = pedidos.findIndex(p => p.id === payload.old.id);
+            if (index !== -1) {
+              pedidos.splice(index, 1);
+              renderTurnos(true);
+            }
+          }
+        })
+        .subscribe();
+    }
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>

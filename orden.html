@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seguimiento de Orden | Fast Orden</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <style>
+    .barra-progreso {
+      height: 8px;
+      background: #2a2a2a;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .barra-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f97316, #facc15);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .paso {
+      transition: all 0.3s ease;
+    }
+    .paso-activo .paso-icono {
+      animation: pulse-icono 2s infinite;
+    }
+    @keyframes pulse-icono {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .estado-animado {
+      animation: fadeInScale 0.5s ease;
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .celebracion {
+      animation: celebracion 1s ease;
+    }
+    @keyframes celebracion {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .fuego-animado {
+      animation: fuego 1s ease infinite alternate;
+    }
+    @keyframes fuego {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-3px) scale(1.05); }
+    }
+  </style>
+</head>
+<body class="bg-[#0a0a0a] text-[#f5f5f5] font-body min-h-screen">
+  <div class="max-w-md mx-auto min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-[#141414] border-b border-[#2a2a2a] px-6 py-4">
+      <div class="flex items-center justify-center">
+        <img id="tenantLogo" src="" alt="" class="h-10 object-contain hidden">
+        <div id="tenantName" class="text-center">
+          <h1 class="font-display text-2xl">...</h1>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main id="mainContent" class="flex-1 px-6 py-8">
+      <!-- Estado de carga -->
+      <div id="loadingState" class="flex flex-col items-center justify-center py-12">
+        <div class="spinner spinner-lg mb-4"></div>
+        <p class="text-[#9ca3af]">Cargando orden...</p>
+      </div>
+
+      <!-- Orden no encontrada -->
+      <div id="notFoundState" class="hidden text-center py-12">
+        <i data-lucide="file-x" class="w-16 h-16 mx-auto mb-4 text-[#ef4444]"></i>
+        <h2 class="font-display text-2xl mb-2">Orden No Encontrada</h2>
+        <p class="text-[#9ca3af]">El número de orden que buscas no existe.</p>
+      </div>
+
+      <!-- Orden encontrada -->
+      <div id="ordenContent" class="hidden">
+        <!-- Número de Orden -->
+        <div class="text-center mb-8">
+          <p class="text-[#9ca3af] text-sm mb-1">Tu Orden</p>
+          <div class="flex items-center justify-center gap-2">
+            <span class="font-display text-5xl">#</span>
+            <span id="numeroOrden" class="font-display text-5xl">...</span>
+          </div>
+          <div id="estadoBadge" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold">
+            <!-- Estado dinámico -->
+          </div>
+        </div>
+
+        <!-- Barra de Progreso -->
+        <div class="mb-8">
+          <div class="barra-progreso mb-4">
+            <div id="barraFill" class="barra-fill" style="width: 0%"></div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div id="paso1" class="paso">
+              <div class="paso-icono w-10 h-10 mx-auto mb-2 rounded-full bg-[#2a2a2a] flex items-center justify-center transition-colors">
+                <i data-lucide="inbox" class="w-5 h-5"></i>
+              </div>
+              <p class="text-sm text-[#9ca3af]">Recibido</p>
+            </div>
+            <div id="paso2" class="paso">
+              <div class="paso-icono w-10 h-10 mx-auto mb-2 rounded-full bg-[#2a2a2a] flex items-center justify-center transition-colors">
+                <i data-lucide="flame" class="w-5 h-5"></i>
+              </div>
+              <p class="text-sm text-[#9ca3af]">En Preparación</p>
+            </div>
+            <div id="paso3" class="paso">
+              <div class="paso-icono w-10 h-10 mx-auto mb-2 rounded-full bg-[#2a2a2a] flex items-center justify-center transition-colors">
+                <i data-lucide="check-circle" class="w-5 h-5"></i>
+              </div>
+              <p class="text-sm text-[#9ca3af]">Listo</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de estado -->
+        <div id="mensajeEstado" class="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-6 mb-6 text-center">
+          <!-- Mensaje dinámico -->
+        </div>
+
+        <!-- Detalle de items -->
+        <div class="bg-[#141414] border border-[#2a2a2a] rounded-2xl overflow-hidden mb-6">
+          <div class="px-6 py-4 border-b border-[#2a2a2a]">
+            <h3 class="font-semibold">Tu Orden</h3>
+          </div>
+          <div id="itemsList" class="p-6 space-y-3">
+            <!-- Items dinámicos -->
+          </div>
+          <div class="px-6 py-4 border-t border-[#2a2a2a]">
+            <div class="flex justify-between items-center">
+              <span class="text-[#9ca3af]">Total</span>
+              <span id="ordenTotal" class="font-display text-xl">...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info adicional -->
+        <div class="text-center text-sm text-[#9ca3af]">
+          <p>Actualizado: <span id="ultimaActualizacion">...</span></p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#141414] border-t border-[#2a2a2a] px-6 py-4">
+      <div class="flex items-center justify-center gap-2 text-[#9ca3af] text-sm">
+        <i data-lucide="zap" class="w-4 h-4"></i>
+        <span>Fast Orden</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="assets/js/supabase.js"></script>
+  <script>
+    // Usar window.supabaseClient directamente
+    lucide.createIcons();
+
+    let orden = null;
+    let tenant = null;
+    let channel = null;
+
+    const ESTADOS = {
+      pendiente: { label: 'Recibido', color: 'text-[#f59e0b]', bg: 'bg-[#f59e0b]/20', icono: 'inbox', progreso: 15 },
+      en_preparacion: { label: 'En Preparación 🔥', color: 'text-[#3b82f6]', bg: 'bg-[#3b82f6]/20', icono: 'flame', progreso: 50 },
+      listo: { label: '¡Listo! 🎉', color: 'text-[#22c55e]', bg: 'bg-[#22c55e]/20', icono: 'check-circle', progreso: 100 },
+      entregado: { label: 'Entregado ✅', color: 'text-[#9ca3af]', bg: 'bg-[#9ca3af]/20', icono: 'package-check', progreso: 100 },
+      cancelado: { label: 'Cancelado', color: 'text-[#ef4444]', bg: 'bg-[#ef4444]/20', icono: 'x-circle', progreso: 0 }
+    };
+
+    async function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ordenId = urlParams.get('id');
+
+      if (!ordenId) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('notFoundState').classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      // Cargar orden
+      await cargarOrden(ordenId);
+
+      if (!orden) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('notFoundState').classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      // Cargar tenant
+      const { data: tenantData } = await supabaseClient
+        .from('tenants')
+        .select('*')
+        .eq('id', orden.tenant_id)
+        .single();
+
+      tenant = tenantData;
+
+      // Mostrar contenido
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('ordenContent').classList.remove('hidden');
+
+      // Actualizar UI
+      actualizarUI();
+
+      // Suscribirse a cambios
+      suscribirRealtime(ordenId);
+
+      // Polling como respaldo
+      setInterval(() => cargarOrden(ordenId, true), 10000);
+
+      lucide.createIcons();
+    }
+
+    async function cargarOrden(ordenId, silent = false) {
+      const { data, error } = await supabaseClient
+        .from('pedidos')
+        .select('*, items_pedido(*)')
+        .eq('id', ordenId)
+        .single();
+
+      if (error) {
+        if (!silent) console.error('Error cargando orden:', error);
+        return;
+      }
+
+      orden = data;
+
+      if (!silent) {
+        actualizarUI();
+      }
+    }
+
+    function actualizarUI() {
+      if (!orden || !tenant) return;
+
+      // Tenant info
+      document.querySelector('#tenantName h1').textContent = tenant.nombre;
+      if (tenant.logo_url) {
+        const logoEl = document.getElementById('tenantLogo');
+        logoEl.src = tenant.logo_url;
+        logoEl.classList.remove('hidden');
+      }
+
+      // Número de orden
+      document.getElementById('numeroOrden').textContent = orden.numero_dia;
+
+      // Estado badge
+      const estadoConfig = ESTADOS[orden.estado] || ESTADOS.pendiente;
+      const badgeEl = document.getElementById('estadoBadge');
+      badgeEl.className = `mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${estadoConfig.bg} ${estadoConfig.color}`;
+      badgeEl.innerHTML = `
+        <i data-lucide="${estadoConfig.icono}" class="w-4 h-4"></i>
+        <span>${estadoConfig.label}</span>
+      `;
+
+      // Barra de progreso
+      const progreso = estadoConfig.progreso;
+      document.getElementById('barraFill').style.width = `${progreso}%`;
+
+      // Pasos
+      const pasos = ['pendiente', 'en_preparacion', 'listo'];
+      const estadoIndex = pasos.indexOf(orden.estado);
+
+      pasos.forEach((paso, index) => {
+        const pasoEl = document.getElementById(`paso${index + 1}`);
+        const iconoEl = pasoEl.querySelector('.paso-icono');
+        const textoEl = pasoEl.querySelector('p');
+
+        if (index <= estadoIndex || orden.estado === 'entregado' || orden.estado === 'listo') {
+          iconoEl.classList.remove('bg-[#2a2a2a]');
+          iconoEl.classList.add('bg-[#f97316]');
+          textoEl.classList.remove('text-[#9ca3af]');
+          textoEl.classList.add('text-white', 'font-semibold');
+
+          if (index === estadoIndex) {
+            pasoEl.classList.add('paso-activo');
+          } else {
+            pasoEl.classList.remove('paso-activo');
+          }
+        } else {
+          iconoEl.classList.add('bg-[#2a2a2a]');
+          iconoEl.classList.remove('bg-[#f97316]');
+          textoEl.classList.add('text-[#9ca3af]');
+          textoEl.classList.remove('text-white', 'font-semibold');
+          pasoEl.classList.remove('paso-activo');
+        }
+      });
+
+      // Mensaje de estado
+      const mensajeEl = document.getElementById('mensajeEstado');
+      let mensajeHTML = '';
+
+      switch (orden.estado) {
+        case 'pendiente':
+          mensajeHTML = `
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-[#f59e0b]"></i>
+            <p class="font-semibold">Tu orden ha sido recibida</p>
+            <p class="text-sm text-[#9ca3af] mt-1">Pronto comenzaremos a prepararla</p>
+          `;
+          break;
+        case 'en_preparacion':
+          mensajeHTML = `
+            <i data-lucide="flame" class="w-8 h-8 mx-auto mb-2 text-[#3b82f6] fuego-animado"></i>
+            <p class="font-semibold">¡Tu orden está en preparación!</p>
+            <p class="text-sm text-[#9ca3af] mt-1">Nuestro equipo está cocinando con cariño</p>
+          `;
+          break;
+        case 'listo':
+          mensajeHTML = `
+            <div class="celebracion">
+              <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-2 text-[#22c55e]"></i>
+              <p class="font-display text-2xl text-[#22c55e]">¡Tu orden está lista! 🎉</p>
+              <p class="text-sm text-[#9ca3af] mt-1">Pasa a retirarla cuando quieras</p>
+            </div>
+          `;
+          break;
+        case 'entregado':
+          mensajeHTML = `
+            <i data-lucide="package-check" class="w-8 h-8 mx-auto mb-2 text-[#9ca3af]"></i>
+            <p class="font-semibold">Orden entregada</p>
+            <p class="text-sm text-[#9ca3af] mt-1">¡Gracias por tu compra!</p>
+          `;
+          break;
+        case 'cancelado':
+          mensajeHTML = `
+            <i data-lucide="x-circle" class="w-8 h-8 mx-auto mb-2 text-[#ef4444]"></i>
+            <p class="font-semibold">Orden cancelada</p>
+            <p class="text-sm text-[#9ca3af] mt-1">Comunícate con el local para más información</p>
+          `;
+          break;
+      }
+
+      mensajeEl.innerHTML = mensajeHTML;
+
+      // Items
+      const items = orden.items_pedido || [];
+      document.getElementById('itemsList').innerHTML = items.map(item => `
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#f97316] font-semibold">${item.cantidad}x</span>
+              <span>${item.nombre}</span>
+            </div>
+            ${item.notas?.length ? `<p class="text-sm text-[#9ca3af] mt-1">📝 ${item.notas.join(', ')}</p>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      // Total
+      document.getElementById('ordenTotal').textContent = `${tenant.moneda || 'RD$'}${orden.total.toFixed(2)}`;
+
+      // Última actualización
+      document.getElementById('ultimaActualizacion').textContent = new Date().toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      lucide.createIcons();
+    }
+
+    function suscribirRealtime(ordenId) {
+      channel = supabase
+        .channel(`orden-${ordenId}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'pedidos',
+          filter: `id=eq.${ordenId}`
+        }, (payload) => {
+          orden = { ...orden, ...payload.new };
+          actualizarUI();
+
+          // Vibrar si está listo
+          if (payload.new.estado === 'listo' && navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+          }
+        })
+        .subscribe();
+    }
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>
