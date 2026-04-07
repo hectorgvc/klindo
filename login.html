@@ -67,7 +67,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="assets/js/supabase.js?v=5"></script>
+  <script src="assets/js/supabase.js?v=6"></script>
   <script>
     // Usar window.supabaseClient directamente para evitar redeclaración
     const sb = window.supabaseClient;
@@ -114,7 +114,7 @@
         // Obtener perfil del usuario
         const { data: profile, error: profileError } = await sb
           .from('profiles')
-          .select('*, tenants(*)')
+          .select('*')
           .eq('id', data.user.id)
           .single();
 
@@ -122,6 +122,17 @@
 
         if (!profile) {
           throw new Error('Perfil no encontrado');
+        }
+
+        // Obtener datos del tenant separadamente si aplica
+        let tenantData = null;
+        if (profile.tenant_id) {
+          const { data: tenant } = await sb
+            .from('tenants')
+            .select('*')
+            .eq('id', profile.tenant_id)
+            .single();
+          tenantData = tenant;
         }
 
         // Verificar si el usuario está activo
@@ -140,7 +151,7 @@
           window.location.href = '/superadmin/index.html';
         } else if (profile.rol === 'admin') {
           // Verificar tenant activo
-          if (profile.tenants && !profile.tenants.activo) {
+          if (tenantData && !tenantData.activo) {
             await sb.auth.signOut();
             throw new Error('El negocio está inactivo. Contacta al soporte.');
           }
@@ -149,7 +160,7 @@
           sessionStorage.setItem('tenant_id', profile.tenant_id);
 
           // Verificar plan vencido
-          const planVencido = profile.tenants?.plan_expira_at && new Date(profile.tenants.plan_expira_at) < new Date();
+          const planVencido = tenantData?.plan_expira_at && new Date(tenantData.plan_expira_at) < new Date();
           if (planVencido) {
             sessionStorage.setItem('plan_vencido', 'true');
           }
