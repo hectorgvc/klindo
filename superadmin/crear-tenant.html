@@ -39,7 +39,7 @@
       </a>
     </nav>
 
-    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#2a2a2a]">
+    <div class="mt-auto shrink-0 p-4 border-t border-[#2a2a2a]">
       <div class="flex items-center gap-3 mb-3">
         <div class="w-8 h-8 bg-[#1f1f1f] rounded-full flex items-center justify-center">
           <i data-lucide="user" class="w-4 h-4"></i>
@@ -195,6 +195,35 @@
         </div>
       </div>
 
+      
+      <!-- Repartidor (Opcional) -->
+      <div id="deliverySection" class="card p-6 mb-6 hidden">
+        <h2 class="font-display text-xl mb-6 flex items-center gap-2">
+          <i data-lucide="bike" class="w-5 h-5 text-[#3b82f6]"></i>
+          Primer Repartidor (Opcional)
+        </h2>
+        <p class="text-sm text-[#9ca3af] mb-4">Solo disponible en planes Pro. Puedes agregarlo más tarde.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <label class="form-label">Nombre Completo</label>
+            <input type="text" id="deliveryName" class="form-input" placeholder="Nombre del repartidor">
+          </div>
+          <div>
+            <label class="form-label">Email</label>
+            <div class="relative">
+              <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
+              <input type="email" id="deliveryEmail" class="form-input pl-12" placeholder="repartidor@ejemplo.com">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Contraseña</label>
+            <div class="relative">
+              <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
+              <input type="text" id="deliveryPassword" class="form-input pl-12" placeholder="Mínimo 6 caracteres">
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- Botones -->
       <div class="flex gap-4">
         <button type="button" onclick="history.back()" class="btn btn-secondary">Cancelar</button>
@@ -256,7 +285,7 @@
   <script src="../assets/js/supabase.js"></script>
   <script src="../assets/js/auth.js"></script>
   <script>
-    // Usar window.window.supabaseClient directamente
+    // Usar window.supabaseClient directamente
     lucide.createIcons();
 
     const EDGE_FUNCTION_URL = 'https://yetdmvlisxavxdwdxyyb.supabase.co/functions/v1/create-admin-user';
@@ -341,7 +370,18 @@
       });
     }
 
-    document.getElementById('tenantPlan').addEventListener('change', updatePlanSummary);
+    
+    document.getElementById('tenantPlan').addEventListener('change', (e) => {
+      updatePlanSummary();
+      const plan = e.target.value;
+      const deliverySection = document.getElementById('deliverySection');
+      if (plan === 'pro') {
+        deliverySection.classList.remove('hidden');
+      } else {
+        deliverySection.classList.add('hidden');
+      }
+    });
+
     document.getElementById('tenantCiclo').addEventListener('change', updatePlanSummary);
     document.getElementById('planStartDate').addEventListener('change', updatePlanSummary);
 
@@ -404,7 +444,16 @@
           throw tenantError;
         }
 
+        
+        // Opcional: Crear repartidor
+        let deliveryRepAdded = false;
+        const tenantPlanType = document.getElementById('tenantPlan').value;
+        const dName = document.getElementById('deliveryName').value;
+        const dEmail = document.getElementById('deliveryEmail').value;
+        const dPass = document.getElementById('deliveryPassword').value;
+
         // 3. Crear usuario admin via Edge Function
+
         const adminData = {
           nombre: document.getElementById('adminName').value,
           email: document.getElementById('adminEmail').value,
@@ -412,23 +461,55 @@
           tenant_id: tenant.id
         };
 
-        const { data: { session } } = await window.window.supabaseClient.auth.getSession();
+        const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
+
+        if (!session?.access_token) {
+          throw new Error('No hay sesión activa. Por favor inicia sesión nuevamente.');
+        }
 
         const response = await fetch(EDGE_FUNCTION_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': 'sb_publishable_ysSwpu3wAKcKR4OQzynpTg_Dvk8NznP'
           },
           body: JSON.stringify(adminData)
         });
 
+        const responseData = await response.json();
+
         if (!response.ok) {
           // Rollback: eliminar tenant
-          await window.window.supabaseClient.from('tenants').delete().eq('id', tenant.id);
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Error al crear el usuario admin');
+          await window.supabaseClient.from('tenants').delete().eq('id', tenant.id);
+          throw new Error(responseData.error || 'Error al crear el usuario admin');
         }
+
+        // 3.5 Si es Pro y configuro repartidor, registrarlo!
+        if (tenantPlanType === 'pro' && dName && dEmail && dPass) {
+           const deliveryData = {
+              nombre: dName,
+              email: dEmail,
+              password: dPass,
+              tenant_id: tenant.id,
+              rol: 'delivery'
+           };
+           const responseDelivery = await fetch(EDGE_FUNCTION_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+                'apikey': 'sb_publishable_ysSwpu3wAKcKR4OQzynpTg_Dvk8NznP'
+              },
+              body: JSON.stringify(deliveryData)
+            });
+            if (responseDelivery.ok) {
+               deliveryRepAdded = true;
+            } else {
+               console.error('Error creando repartidor:', await responseDelivery.text());
+            }
+        }
+
 
         // 4. Mostrar resumen
         const baseUrl = window.location.origin;

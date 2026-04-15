@@ -1,5 +1,6 @@
-// Auth.js - Lógica de autenticación y redirección para Fast Orden
-// Usar window.window.supabaseClient directamente para evitar redeclaración
+// Auth.js - Lógica de autenticación y redirección para Klindo
+// Usar window.supabaseClient directamente para evitar redeclaración
+// FIX: Consultas separadas + maybeSingle() para evitar "Cannot coerce to single JSON object"
 
 /**
  * Iniciar sesión con email y contraseña
@@ -13,17 +14,18 @@ async function login(email, password) {
 
     if (error) throw error;
 
-    // Obtener perfil del usuario para determinar rol
+    // Paso 1: Obtener perfil (SIN join para evitar coerce error)
     const { data: profile, error: profileError } = await window.supabaseClient
       .from('profiles')
-      .select('*, tenants(*)')
+      .select('*')
       .eq('id', data.user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError) throw profileError;
 
     if (!profile) {
-      throw new Error('Perfil no encontrado');
+      await window.supabaseClient.auth.signOut();
+      throw new Error('Perfil de usuario no encontrado. Contacta al soporte.');
     }
 
     // Verificar si el usuario está activo
@@ -32,38 +34,48 @@ async function login(email, password) {
       throw new Error('Usuario inactivo. Contacta al soporte.');
     }
 
-    // Guardar tenant_id en sessionStorage para uso rápido
+    // Paso 2: Obtener tenant por separado (si aplica)
+    let tenant = null;
+    if (profile.tenant_id) {
+      const { data: tenantData } = await window.supabaseClient
+        .from('tenants')
+        .select('*')
+        .eq('id', profile.tenant_id)
+        .maybeSingle();
+      tenant = tenantData;
+    }
+
+    // Guardar en sessionStorage
     if (profile.tenant_id) {
       sessionStorage.setItem('tenant_id', profile.tenant_id);
     }
-
-    // Guardar rol
     sessionStorage.setItem('user_role', profile.rol);
     sessionStorage.setItem('user_name', profile.nombre);
 
     // Redirigir según el rol
     if (profile.rol === 'superadmin') {
-      window.location.href = '/superadmin/index.html';
-    } else if (profile.rol === 'admin') {
+      window.location.href = 'superadmin/index.html';
+    } else if (profile.rol === 'admin' || profile.rol === 'operador') {
       // Verificar si el tenant está activo
-      if (profile.tenants && !profile.tenants.activo) {
+      if (tenant && !tenant.activo) {
         await window.supabaseClient.auth.signOut();
         throw new Error('El negocio está inactivo. Contacta al soporte.');
       }
 
-      // Verificar plan
-      const planVencido = profile.tenants?.plan_expira_at && new Date(profile.tenants.plan_expira_at) < new Date();
+      // Verificar plan vencido
+      const planVencido = tenant?.plan_expira_at && new Date(tenant.plan_expira_at) < new Date();
       if (planVencido) {
-        // Permitir login pero redirigir a renovación
         sessionStorage.setItem('plan_vencido', 'true');
       }
 
-      window.location.href = '/admin/index.html';
+      window.location.href = 'recepcion.html';
+    } else if (profile.rol === 'repartidor') {
+      window.location.href = 'delivery.html';
     } else {
       throw new Error('Rol no válido');
     }
 
-    return { success: true, user: data.user, profile };
+    return { success: true, user: data.user, profile, tenant };
   } catch (error) {
     console.error('Error de login:', error);
     return { success: false, error: error.message };
@@ -77,9 +89,10 @@ async function logout() {
   try {
     await window.supabaseClient.auth.signOut();
     sessionStorage.clear();
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
   } catch (error) {
     console.error('Error al cerrar sesión:', error);
+    window.location.href = 'login.html';
   }
 }
 
@@ -92,34 +105,46 @@ async function getSession() {
 }
 
 /**
- * Obtener perfil del usuario actual
+ * Obtener perfil del usuario actual (consultas separadas, sin join)
  */
 async function getCurrentProfile() {
   const { data: { session } } = await window.supabaseClient.auth.getSession();
   if (!session) return null;
 
-  const { data: profile, error } = await window.supabaseClient
+  // Paso 1: perfil
+  const { data: profile, error: profileErr } = await window.supabaseClient
     .from('profiles')
-    .select('*, tenants(*)')
+    .select('*')
     .eq('id', session.user.id)
-    .single();
+    .maybeSingle();
 
-  if (error) {
-    console.error('Error al obtener perfil:', error);
+  if (profileErr || !profile) {
+    console.error('Error al obtener perfil:', profileErr);
     return null;
+  }
+
+  // Paso 2: tenant
+  if (profile.tenant_id) {
+    const { data: tenant } = await window.supabaseClient
+      .from('tenants')
+      .select('*')
+      .eq('id', profile.tenant_id)
+      .maybeSingle();
+
+    profile.tenants = tenant;
   }
 
   return profile;
 }
 
 /**
- * Proteger rutas admin - debe llamarse al inicio de cada página /admin/*
+ * Proteger rutas admin — llamar al inicio de cada página /admin/* y recepcion.html
  */
 async function protectAdminRoute() {
   const { data: { session } } = await window.supabaseClient.auth.getSession();
 
   if (!session) {
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
     return null;
   }
 
@@ -130,14 +155,14 @@ async function protectAdminRoute() {
     return null;
   }
 
-  // Verificar rol admin o superadmin
-  if (profile.rol !== 'admin' && profile.rol !== 'superadmin') {
-    window.location.href = '/login.html?error=unauthorized';
+  // Verificar rol
+  if (profile.rol !== 'admin' && profile.rol !== 'superadmin' && profile.rol !== 'operador') {
+    window.location.href = 'login.html?error=unauthorized';
     return null;
   }
 
-  // Si es admin (no superadmin), verificar tenant activo
-  if (profile.rol === 'admin') {
+  // Si es admin/operador, verificar tenant activo
+  if (profile.rol === 'admin' || profile.rol === 'operador') {
     if (!profile.tenants || !profile.tenants.activo) {
       await logout();
       return null;
@@ -146,14 +171,11 @@ async function protectAdminRoute() {
     // Guardar tenant_id en sessionStorage
     sessionStorage.setItem('tenant_id', profile.tenant_id);
 
-    // Verificar plan
+    // Verificar plan vencido
     const planVencido = profile.tenants?.plan_expira_at && new Date(profile.tenants.plan_expira_at) < new Date();
-    if (planVencido) {
-      // Redirigir a página de renovación si no está ya ahí
-      if (!window.location.href.includes('renovar')) {
-        window.location.href = '/admin/renovar.html';
-        return null;
-      }
+    if (planVencido && !window.location.href.includes('renovar')) {
+      window.location.href = 'admin/renovar.html';
+      return null;
     }
   }
 
@@ -161,20 +183,20 @@ async function protectAdminRoute() {
 }
 
 /**
- * Proteger rutas superadmin - debe llamarse al inicio de cada página /superadmin/*
+ * Proteger rutas superadmin
  */
 async function protectSuperadminRoute() {
   const { data: { session } } = await window.supabaseClient.auth.getSession();
 
   if (!session) {
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
     return null;
   }
 
   const profile = await getCurrentProfile();
 
   if (!profile || profile.rol !== 'superadmin') {
-    window.location.href = '/admin/index.html';
+    window.location.href = 'recepcion.html';
     return null;
   }
 
@@ -182,32 +204,11 @@ async function protectSuperadminRoute() {
 }
 
 /**
- * Verificar si el admin puede agregar productos según su plan
- */
-async function puedeAgregarProducto(tenantId, plan) {
-  if (plan === 'pro') return { canAdd: true };
-
-  const { count, error } = await window.supabaseClient
-    .from('productos')
-    .select('*', { count: 'exact', head: true })
-    .eq('tenant_id', tenantId);
-
-  if (error) {
-    console.error('Error al contar productos:', error);
-    return { canAdd: false, error: error.message };
-  }
-
-  return { canAdd: count < 30, currentCount: count, limit: 30 };
-}
-
-/**
  * Verificar si el plan está próximo a vencer (menos de 15 días)
  */
 function planProximoAVencer(planExpiraAt) {
   if (!planExpiraAt) return false;
-  const fechaVencimiento = new Date(planExpiraAt);
-  const hoy = new Date();
-  const diasRestantes = Math.ceil((fechaVencimiento - hoy) / (1000 * 60 * 60 * 24));
+  const diasRestantes = Math.ceil((new Date(planExpiraAt) - new Date()) / (1000 * 60 * 60 * 24));
   return diasRestantes <= 15 && diasRestantes > 0;
 }
 
@@ -227,7 +228,6 @@ window.auth = {
   getCurrentProfile,
   protectAdminRoute,
   protectSuperadminRoute,
-  puedeAgregarProducto,
   planProximoAVencer,
   planVencido
 };

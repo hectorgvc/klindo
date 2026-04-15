@@ -33,7 +33,7 @@
       </div>
     </div>
 
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" id="sidebarNav">
       <a href="index.html" class="sidebar-link">
         <i data-lucide="layout-dashboard"></i>
         <span>Dashboard</span>
@@ -54,13 +54,87 @@
         <i data-lucide="building-2"></i>
         <span>Cuentas Bancarias</span>
       </a>
+
+      <!-- Divider para módulos Pro -->
+      <div id="proModulesDivider" class="hidden border-t border-[#2a2a2a] my-2"></div>
+      <p id="proModulesLabel" class="hidden px-4 py-2 text-xs text-[#9ca3af] uppercase tracking-wider">Módulos Pro</p>
+
+      <!-- Módulos Pro -->
+      <a id="cajaLink" href="#" class="sidebar-link hidden">
+        <i data-lucide="receipt"></i>
+        <span>Caja</span>
+      </a>
+      <a id="cocinaLink" href="#" class="sidebar-link hidden">
+        <i data-lucide="chef-hat"></i>
+        <span>Cocina</span>
+      </a>
+      <a id="turnosLink" href="#" class="sidebar-link hidden">
+        <i data-lucide="calendar-clock"></i>
+        <span>Turnos</span>
+      </a>
+      
+      <a id="pedidosLink" href="#" class="sidebar-link hidden">
+        <i data-lucide="clipboard-list"></i>
+        <span>Pedidos</span>
+      </a>
+      <a id="repartidoresLink" href="#" class="sidebar-link hidden">
+        <i data-lucide="bike"></i>
+        <span>Repartidores</span>
+      </a>
+      <a id="notasLink" href="#" class="sidebar-link hidden">
+        <i data-lucide="sticky-note"></i>
+        <span>Notas</span>
+      </a>
+      <a id="dashboardProLink" href="#" class="sidebar-link hidden">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Dashboard Avanzado</span>
+      </a>
+
+      <!-- Items bloqueados para plan Lite -->
+      <a id="cajaLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
+        <i data-lucide="receipt"></i>
+        <span>Caja</span>
+        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
+      </a>
+      <a id="cocinaLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
+        <i data-lucide="chef-hat"></i>
+        <span>Cocina</span>
+        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
+      </a>
+      <a id="turnosLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
+        <i data-lucide="calendar-clock"></i>
+        <span>Turnos</span>
+        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
+      </a>
+      
+      <a id="pedidosLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
+        <i data-lucide="clipboard-list"></i>
+        <span>Pedidos</span>
+        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
+      </a>
+      <a id="repartidoresLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
+        <i data-lucide="bike"></i>
+        <span>Repartidores</span>
+        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
+      </a>
+      <a id="notasLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
+        <i data-lucide="sticky-note"></i>
+        <span>Notas</span>
+        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
+      </a>
+      <a id="dashboardProLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Dashboard Avanzado</span>
+        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
+      </a>
+
       <a href="configuracion.html" class="sidebar-link active">
         <i data-lucide="settings"></i>
         <span>Configuración</span>
       </a>
     </nav>
 
-    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#2a2a2a]">
+    <div class="mt-auto shrink-0 p-4 border-t border-[#2a2a2a]">
       <div class="flex items-center gap-3 mb-3">
         <div class="w-8 h-8 bg-[#1f1f1f] rounded-full flex items-center justify-center">
           <i data-lucide="user" class="w-4 h-4"></i>
@@ -179,6 +253,75 @@
           </div>
         </div>
 
+        <!-- Horario de Atención -->
+        <div class="card p-6">
+          <h2 class="font-display text-xl mb-6 flex items-center gap-2">
+            <i data-lucide="clock" class="w-5 h-5 text-[#f97316]"></i>
+            Horario de Atención
+          </h2>
+
+          <div class="space-y-5">
+            <div>
+              <label class="form-label mb-3 block">Días Laborales</label>
+              <div class="flex flex-wrap gap-3">
+                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
+                  <input type="checkbox" value="lunes" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales">
+                  <span class="text-sm">Lun</span>
+                </label>
+                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
+                  <input type="checkbox" value="martes" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
+                  <span class="text-sm">Mar</span>
+                </label>
+                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
+                  <input type="checkbox" value="miercoles" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
+                  <span class="text-sm">Mié</span>
+                </label>
+                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
+                  <input type="checkbox" value="jueves" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
+                  <span class="text-sm">Jue</span>
+                </label>
+                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
+                  <input type="checkbox" value="viernes" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
+                  <span class="text-sm">Vie</span>
+                </label>
+                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
+                  <input type="checkbox" value="sabado" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
+                  <span class="text-sm">Sáb</span>
+                </label>
+                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
+                  <input type="checkbox" value="domingo" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
+                  <span class="text-sm">Dom</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Hora de Apertura</label>
+                <div class="relative">
+                  <input type="time" id="businessOpenTime" class="form-input">
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Hora de Cierre</label>
+                <div class="relative">
+                  <input type="time" id="businessCloseTime" class="form-input">
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-[#2a2a2a]">
+              <label class="flex items-center justify-between cursor-pointer">
+                <div>
+                  <span class="font-semibold block text-base">Abrir ahora manualmente</span>
+                  <span class="text-xs text-[#9ca3af]">Forza el estado a abierto, ignorando el horario.</span>
+                </div>
+                <input type="checkbox" id="manualOpenToggle" class="w-5 h-5 rounded border-[#2a2a2a] text-[#f97316] focus:ring-[#f97316]">
+              </label>
+            </div>
+          </div>
+        </div>
+
         <!-- Botón Guardar -->
         <div class="flex gap-4">
           <button id="resetBtn" type="button" class="btn btn-secondary">
@@ -250,7 +393,6 @@
   <script src="../assets/js/supabase.js"></script>
   <script src="../assets/js/auth.js"></script>
   <script>
-    const window.supabaseClient = window.window.supabaseClient;
     lucide.createIcons();
 
     let tenantId = null;
@@ -271,6 +413,9 @@
         updatePreview();
       }
 
+      // Renderizar menú según el plan
+      renderSidebarMenu();
+
       lucide.createIcons();
     }
 
@@ -281,6 +426,25 @@
       document.getElementById('businessWhatsapp').value = currentTenant.whatsapp || '';
       document.getElementById('businessCurrency').value = currentTenant.moneda || 'RD$';
       document.getElementById('businessDelivery').value = currentTenant.costo_delivery || 50;
+
+      // Horarios — Supabase devuelve '18:30:00', el input time necesita 'HH:MM'
+      if (currentTenant.dias_laborales) {
+        document.querySelectorAll('input[name="diasLaborales"]').forEach(cb => {
+          cb.checked = currentTenant.dias_laborales.includes(cb.value);
+        });
+      }
+      const rawApertura = currentTenant.hora_apertura || '11:00';
+      const rawCierre = currentTenant.hora_cierre || '23:00';
+      const apertura = rawApertura.substring(0, 5);
+      const cierre = rawCierre.substring(0, 5);
+      console.log('=== DEBUG Horarios ===');
+      console.log('Raw apertura:', rawApertura, '→', apertura);
+      console.log('Raw cierre:', rawCierre, '→', cierre);
+      console.log('Dias laborales:', currentTenant.dias_laborales);
+      console.log('Abierto manual:', currentTenant.abierto_manual);
+      document.getElementById('businessOpenTime').value = apertura;
+      document.getElementById('businessCloseTime').value = cierre;
+      document.getElementById('manualOpenToggle').checked = currentTenant.abierto_manual || false;
 
       // Colores
       document.getElementById('primaryColor').value = currentTenant.color_primary || '#f97316';
@@ -400,9 +564,27 @@
       const costo_delivery = parseFloat(document.getElementById('businessDelivery').value) || 0;
       const color_primary = document.getElementById('primaryColor').value;
       const color_accent = document.getElementById('accentColor').value;
+      const dias_laborales = Array.from(document.querySelectorAll('input[name="diasLaborales"]:checked')).map(cb => cb.value);
+      
+      const horaApertura = document.getElementById('businessOpenTime').value;
+      const horaCierre = document.getElementById('businessCloseTime').value;
+      const abiertoManual = document.getElementById('manualOpenToggle').checked;
+
+      console.log('=== INICIO GUARDAR ===');
+      console.log('Guardando apertura:', horaApertura);
+      console.log('Guardando cierre:', horaCierre);
+      console.log('Guardando abierto_manual:', abiertoManual);
+      console.log('tenantId:', tenantId);
+      console.log('Payload dias_laborales:', dias_laborales);
 
       if (!nombre || !whatsapp) {
         showToast('Completa los campos requeridos', 'error');
+        return;
+      }
+
+      if (!tenantId) {
+        showToast('Error: No se pudo identificar el tenant', 'error');
+        console.error('ERROR CRITICO: tenantId es null o undefined');
         return;
       }
 
@@ -416,7 +598,7 @@
         if (selectedLogo) {
           const fileExt = selectedLogo.name.split('.').pop();
           const fileName = `logo-${Date.now()}.${fileExt}`;
-          const filePath = `${tenantId}/${fileName}`;
+          const filePath = `${tenantId}/logo/${fileName}`;
 
           const { error: uploadError } = await window.supabaseClient.storage
             .from('tenant-assets')
@@ -429,12 +611,15 @@
             .getPublicUrl(filePath);
 
           logo_url = publicUrl;
+          console.log('URL de logo guardada en storage:', logo_url);
         }
 
-        // Actualizar tenant
-        const { error } = await window.supabaseClient
-          .from('tenants')
-          .update({
+        // Formatear horas para Postgres (HH:MM:SS)
+        const formatTime = t => (t && t.length === 5) ? t + ':00' : (t || null);
+        const horaAperturaDb = formatTime(horaApertura);
+        const horaCierreDb = formatTime(horaCierre);
+
+        const payload = {
             nombre,
             slogan,
             whatsapp,
@@ -442,19 +627,53 @@
             costo_delivery,
             color_primary,
             color_accent,
-            logo_url
-          })
-          .eq('id', tenantId);
+            logo_url,
+            dias_laborales,
+            hora_apertura: horaAperturaDb,
+            hora_cierre: horaCierreDb,
+            abierto_manual: abiertoManual
+        };
 
-        if (error) throw error;
+        console.log('Enviando a Supabase (payload exacto):', JSON.stringify(payload, null, 2));
+
+        // Actualizar tenant y pedir el registro actualizado de vuelta
+        const { data: updateData, error } = await window.supabaseClient
+          .from('tenants')
+          .update(payload)
+          .eq('id', tenantId)
+          .select();
+
+        console.log('=== RESULTADO UPDATE ===');
+        console.log('Data retornada:', updateData);
+        console.log('Error retornado:', error);
+
+        if (error) {
+          console.error('Error detallado de Supabase:', {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+          });
+          throw new Error(`Supabase error: ${error.message} (code: ${error.code})`);
+        }
+
+        if (!updateData || updateData.length === 0) {
+          console.error('Update retornó data vacía - posible problema RLS o el registro no existe');
+          throw new Error('No se pudo actualizar el registro. Verifica permisos RLS.');
+        }
+
+        console.log('Update exitoso. Datos retornados:', updateData[0]);
+        console.log('Hora apertura guardada:', updateData[0].hora_apertura);
+        console.log('Hora cierre guardada:', updateData[0].hora_cierre);
 
         // Actualizar tenant actual
-        currentTenant = { ...currentTenant, ...{ nombre, slogan, whatsapp, moneda, costo_delivery, color_primary, color_accent, logo_url } };
+        currentTenant = { ...currentTenant, ...payload };
 
         showToast('Cambios guardados exitosamente');
       } catch (error) {
-        console.error('Error:', error);
-        showToast('Error al guardar', 'error');
+        console.error('Error completo:', error);
+        console.error('Stack trace:', error.stack);
+        showToast('Error al guardar: ' + (error.message || 'Error desconocido'), 'error');
       } finally {
         document.getElementById('saveBtn').disabled = false;
         document.getElementById('saveBtnText').textContent = 'Guardar Cambios';
@@ -480,6 +699,65 @@
 
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
+
+    // Función para mostrar mensaje de función Pro
+    function showProFeatureMessage(event) {
+      event.preventDefault();
+      alert('🔒 Esta función está disponible en el Plan Pro.\n\nContacta a Fast Orden para actualizar tu plan.');
+    }
+
+    // Renderizar menú según el plan
+    function renderSidebarMenu() {
+      if (!currentTenant) return;
+
+      const isPro = currentTenant.plan === 'pro';
+      const tenantSlug = currentTenant.slug;
+
+      // Mostrar divider y label
+      document.getElementById('proModulesDivider').classList.remove('hidden');
+      document.getElementById('proModulesLabel').classList.remove('hidden');
+
+      if (isPro) {
+        // Mostrar links activos para plan Pro
+        document.getElementById('cajaLink').classList.remove('hidden');
+        document.getElementById('cajaLink').href = `/caja.html?tenant=${tenantSlug}`;
+
+        document.getElementById('cocinaLink').classList.remove('hidden');
+        document.getElementById('cocinaLink').href = `/cocina.html?tenant=${tenantSlug}`;
+
+        document.getElementById('turnosLink').classList.remove('hidden');
+        document.getElementById('turnosLink').href = `/turnos.html?tenant=${tenantSlug}`;
+
+        
+        document.getElementById('pedidosLink').classList.remove('hidden');
+        document.getElementById('pedidosLink').href = 'pedidos.html';
+
+        if (document.getElementById('repartidoresLink')) {
+            document.getElementById('repartidoresLink').classList.remove('hidden');
+            document.getElementById('repartidoresLink').href = 'repartidores.html';
+        }
+
+
+        document.getElementById('notasLink').classList.remove('hidden');
+        document.getElementById('notasLink').href = 'notas.html';
+
+        document.getElementById('dashboardProLink').classList.remove('hidden');
+        document.getElementById('dashboardProLink').href = 'dashboard.html';
+      } else {
+        // Mostrar items bloqueados para plan Lite
+        document.getElementById('cajaLinkLite').classList.remove('hidden');
+        document.getElementById('cocinaLinkLite').classList.remove('hidden');
+        document.getElementById('turnosLinkLite').classList.remove('hidden');
+        
+        document.getElementById('pedidosLinkLite').classList.remove('hidden');
+        if (document.getElementById('repartidoresLinkLite')) {
+            document.getElementById('repartidoresLinkLite').classList.remove('hidden');
+        }
+
+        document.getElementById('notasLinkLite').classList.remove('hidden');
+        document.getElementById('dashboardProLinkLite').classList.remove('hidden');
+      }
+    }
 
     // Iniciar
     init();

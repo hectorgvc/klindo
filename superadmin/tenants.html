@@ -39,7 +39,7 @@
       </a>
     </nav>
 
-    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#2a2a2a]">
+    <div class="mt-auto shrink-0 p-4 border-t border-[#2a2a2a]">
       <div class="flex items-center gap-3 mb-3">
         <div class="w-8 h-8 bg-[#1f1f1f] rounded-full flex items-center justify-center">
           <i data-lucide="user" class="w-4 h-4"></i>
@@ -189,7 +189,7 @@
     }
 
     async function loadTenants() {
-      const { data, error } = await supabaseClient
+      const { data, error } = await window.supabaseClient
         .from('tenants')
         .select('*')
         .order('created_at', { ascending: false });
@@ -333,7 +333,7 @@
         plan_expira_at: document.getElementById('editExpiry').value || null
       };
 
-      const { error } = await supabaseClient
+      const { error } = await window.supabaseClient
         .from('tenants')
         .update(updates)
         .eq('id', editingTenantId);

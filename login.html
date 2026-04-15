@@ -1,198 +1,344 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar Sesión | Fast Orden</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <link rel="stylesheet" href="assets/css/main.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Klindo — Inicia Sesión</title>
+  <meta name="description" content="Accede al panel de administración de Klindo, el sistema de gestión para lavanderías." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 40%, #ecfeff 100%);
+      padding: 20px;
+    }
+
+    .login-wrapper {
+      display: flex;
+      width: 100%;
+      max-width: 900px;
+      min-height: 520px;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-xl);
+    }
+
+    /* Panel izquierdo — decorativo */
+    .login-hero {
+      flex: 1;
+      background: linear-gradient(145deg, var(--brand-600) 0%, var(--cyan-500) 50%, var(--teal-500) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 36px;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-hero::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      background: rgba(255,255,255,.08);
+      border-radius: 50%;
+      top: -80px; right: -80px;
+    }
+
+    .login-hero::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,.06);
+      border-radius: 50%;
+      bottom: -60px; left: -60px;
+    }
+
+    .hero-icon {
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,.2);
+      border-radius: var(--radius-xl);
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-icon svg { width: 44px; height: 44px; color: white; }
+
+    .hero-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: white;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .hero-subtitle {
+      color: rgba(255,255,255,.8);
+      text-align: center;
+      font-size: .92rem;
+      line-height: 1.6;
+    }
+
+    .hero-features {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .hero-feat {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255,255,255,.9);
+      font-size: .85rem;
+      font-weight: 600;
+    }
+
+    .hero-feat-dot {
+      width: 8px; height: 8px;
+      background: rgba(255,255,255,.7);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Panel derecho — formulario */
+    .login-form-panel {
+      width: 400px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 48px 40px;
+    }
+
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .login-brand-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--brand-500), var(--cyan-500));
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .login-brand-icon svg { width: 22px; height: 22px; color: white; }
+
+    .login-brand-name {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--text-primary);
+    }
+
+    .login-brand-name span { color: var(--brand-500); }
+
+    .login-welcome {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .login-desc {
+      font-size: .88rem;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+    }
+
+    .login-form { display: flex; flex-direction: column; gap: 20px; }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-with-icon .form-control {
+      padding-left: 42px;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .input-icon svg { width: 18px; height: 18px; }
+
+    .forgot-link {
+      text-align: right;
+      margin-top: -8px;
+      font-size: .82rem;
+      color: var(--brand-600);
+      font-weight: 600;
+    }
+
+    .btn-login {
+      background: linear-gradient(135deg, var(--brand-500), var(--cyan-500));
+      color: white;
+      padding: 13px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: .95rem;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 14px rgba(14,165,233,.35);
+    }
+
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(14,165,233,.4);
+    }
+
+    .btn-login:disabled {
+      opacity: .6;
+      transform: none;
+    }
+
+    .error-msg {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-size: .85rem;
+      font-weight: 600;
+      display: none;
+    }
+
+    .error-msg.show { display: block; }
+
+    @media (max-width: 768px) {
+      .login-wrapper { flex-direction: column; max-width: 420px; }
+      .login-hero { display: none; }
+      .login-form-panel { width: 100%; padding: 36px 28px; }
+    }
+  </style>
 </head>
-<body class="bg-[#0a0a0a] text-[#f5f5f5] font-body min-h-screen flex items-center justify-center p-4">
-  <div class="w-full max-w-md">
-    <!-- Logo -->
-    <div class="text-center mb-8">
-      <div class="w-20 h-20 bg-[#f97316] rounded-2xl mx-auto mb-4 flex items-center justify-center">
-        <i data-lucide="utensils" class="w-10 h-10 text-white"></i>
+<body>
+
+  <div class="login-wrapper">
+
+    <!-- Hero panel -->
+    <div class="login-hero">
+      <div class="hero-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22a8 8 0 0 1-8-8 8 8 0 0 1 8-8c0 2.21.895 4.21 2.343 5.657A8 8 0 0 1 12 22Z"/>
+          <path d="M12 6V2"/>
+          <path d="M4.93 10.93 2.46 8.46"/>
+          <path d="M2 16a8 8 0 0 1 8-8"/>
+          <circle cx="12" cy="14" r="2"/>
+        </svg>
       </div>
-      <h1 class="font-display text-4xl">Fast Orden</h1>
-      <p class="text-[#9ca3af] mt-2">Portal de Administración</p>
+
+      <div>
+        <div class="hero-title">Klindo</div>
+        <div class="hero-subtitle">Sistema de gestión para<br/>lavanderías y tintorerías</div>
+      </div>
+
+      <div class="hero-features">
+        <div class="hero-feat"><span class="hero-feat-dot"></span>Registro de prendas en segundos</div>
+        <div class="hero-feat"><span class="hero-feat-dot"></span>Seguimiento por estado en tiempo real</div>
+        <div class="hero-feat"><span class="hero-feat-dot"></span>Módulo de delivery opcional</div>
+        <div class="hero-feat"><span class="hero-feat-dot"></span>Vista de planta para operaciones</div>
+        <div class="hero-feat"><span class="hero-feat-dot"></span>Dashboard con estadísticas</div>
+      </div>
     </div>
 
-    <!-- Formulario -->
-    <div class="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-8">
-      <h2 class="font-display text-2xl text-center mb-6">Iniciar Sesión</h2>
+    <!-- Form panel -->
+    <div class="login-form-panel">
 
-      <form id="loginForm" class="space-y-5">
-        <div>
-          <label class="form-label">Correo electrónico</label>
-          <div class="relative">
-            <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
-            <input type="email" id="email" required
-              class="form-input pl-12"
-              placeholder="tu@email.com">
+      <div class="login-brand">
+        <div class="login-brand-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22a8 8 0 0 1-8-8 8 8 0 0 1 8-8c0 2.21.895 4.21 2.343 5.657A8 8 0 0 1 12 22Z"/>
+            <circle cx="12" cy="14" r="2"/>
+          </svg>
+        </div>
+        <div class="login-brand-name">Klin<span>do</span></div>
+      </div>
+
+      <h1 class="login-welcome">Bienvenido de vuelta</h1>
+      <p class="login-desc">Ingresa tus credenciales para acceder al panel</p>
+
+      <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="email" class="form-label">Correo electrónico</label>
+          <div class="input-with-icon">
+            <span class="input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
+            <input id="email" name="email" type="email" class="form-control" placeholder="admin@milavanderia.com" required autocomplete="email" />
           </div>
         </div>
 
-        <div>
-          <label class="form-label">Contraseña</label>
-          <div class="relative">
-            <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]"></i>
-            <input type="password" id="password" required
-              class="form-input pl-12"
-              placeholder="••••••••">
-            <button type="button" id="togglePassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-white">
-              <i data-lucide="eye" class="w-5 h-5"></i>
-            </button>
+        <div class="form-group">
+          <label for="password" class="form-label">Contraseña</label>
+          <div class="input-with-icon">
+            <span class="input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input id="password" name="password" type="password" class="form-control" placeholder="••••••••" required autocomplete="current-password" />
           </div>
         </div>
 
-        <div id="errorMessage" class="hidden bg-[#ef4444]/10 border border-[#ef4444] text-[#ef4444] px-4 py-3 rounded-lg flex items-center gap-2">
-          <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
-          <span id="errorText"></span>
-        </div>
+        <div id="errorMsg" class="error-msg"></div>
 
-        <button type="submit" id="loginBtn" class="btn btn-primary w-full">
-          <span id="btnText">Iniciar Sesión</span>
-          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+        <button type="submit" id="btnLogin" class="btn-login">
+          <span id="btnLoginText">Iniciar sesión</span>
         </button>
       </form>
     </div>
-
-    <!-- Footer -->
-    <p class="text-center text-[#9ca3af] text-sm mt-6">
-      © 2025 Fast Orden. Todos los derechos reservados.
-    </p>
   </div>
 
   <!-- Scripts -->
-  <script src="assets/js/supabase.js?v=6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script>
-    // Usar window.supabaseClient directamente para evitar redeclaración
-    const sb = window.supabaseClient;
-    lucide.createIcons();
-
-    const loginForm = document.getElementById('loginForm');
-    const loginBtn = document.getElementById('loginBtn');
-    const btnText = document.getElementById('btnText');
-    const errorMessage = document.getElementById('errorMessage');
-    const errorText = document.getElementById('errorText');
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
-
-    // Mostrar/ocultar contraseña
-    togglePassword.addEventListener('click', () => {
-      const type = passwordInput.type === 'password' ? 'text' : 'password';
-      passwordInput.type = type;
-      togglePassword.innerHTML = type === 'password' ? '<i data-lucide="eye" class="w-5 h-5"></i>' : '<i data-lucide="eye-off" class="w-5 h-5"></i>';
-      lucide.createIcons();
-    });
-
-    loginForm.addEventListener('submit', async (e) => {
+    async function handleLogin(e) {
       e.preventDefault();
 
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const btn       = document.getElementById('btnLogin');
+      const btnText   = document.getElementById('btnLoginText');
+      const errorMsg  = document.getElementById('errorMsg');
+      const email     = document.getElementById('email').value.trim();
+      const password  = document.getElementById('password').value;
 
-      // Ocultar error previo
-      errorMessage.classList.add('hidden');
+      // Feedback visual
+      btn.disabled = true;
+      btnText.textContent = 'Ingresando…';
+      errorMsg.classList.remove('show');
 
-      // Loading state
-      loginBtn.disabled = true;
-      btnText.textContent = 'Iniciando sesión...';
+      const result = await window.auth.login(email, password);
 
-      try {
-        // Login con Supabase
-        const { data, error } = await sb.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) throw error;
-
-        // Obtener perfil del usuario
-        const { data: profile, error: profileError } = await sb
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        if (profileError) throw profileError;
-
-        if (!profile) {
-          throw new Error('Perfil no encontrado');
-        }
-
-        // Obtener datos del tenant separadamente si aplica
-        let tenantData = null;
-        if (profile.tenant_id) {
-          const { data: tenant } = await sb
-            .from('tenants')
-            .select('*')
-            .eq('id', profile.tenant_id)
-            .single();
-          tenantData = tenant;
-        }
-
-        // Verificar si el usuario está activo
-        if (!profile.activo) {
-          await sb.auth.signOut();
-          throw new Error('Usuario inactivo. Contacta al soporte.');
-        }
-
-        // Guardar en sessionStorage
-        sessionStorage.setItem('user_role', profile.rol);
-        sessionStorage.setItem('user_name', profile.nombre);
-
-        // Redirigir según rol
-        if (profile.rol === 'superadmin') {
-          sessionStorage.setItem('tenant_id', 'null');
-          window.location.href = '/superadmin/index.html';
-        } else if (profile.rol === 'admin') {
-          // Verificar tenant activo
-          if (tenantData && !tenantData.activo) {
-            await sb.auth.signOut();
-            throw new Error('El negocio está inactivo. Contacta al soporte.');
-          }
-
-          // Guardar tenant_id
-          sessionStorage.setItem('tenant_id', profile.tenant_id);
-
-          // Verificar plan vencido
-          const planVencido = tenantData?.plan_expira_at && new Date(tenantData.plan_expira_at) < new Date();
-          if (planVencido) {
-            sessionStorage.setItem('plan_vencido', 'true');
-          }
-
-          window.location.href = '/admin/index.html';
-        } else {
-          throw new Error('Rol no válido');
-        }
-
-      } catch (error) {
-        console.error('Error de login:', error);
-        errorText.textContent = error.message || 'Error al iniciar sesión';
-        errorMessage.classList.remove('hidden');
-      } finally {
-        loginBtn.disabled = false;
-        btnText.textContent = 'Iniciar Sesión';
+      if (!result.success) {
+        errorMsg.textContent = result.error || 'Credenciales incorrectas. Intenta de nuevo.';
+        errorMsg.classList.add('show');
+        btn.disabled = false;
+        btnText.textContent = 'Iniciar sesión';
       }
-    });
-
-    // Verificar si hay error en URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    if (error) {
-      if (error === 'plan_vencido') {
-        errorText.textContent = 'Tu plan ha vencido. Contacta al soporte para renovar.';
-      } else if (error === 'unauthorized') {
-        errorText.textContent = 'No tienes permisos para acceder a esa área.';
-      } else {
-        errorText.textContent = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
-      }
-      errorMessage.classList.remove('hidden');
+      // Si es exitoso, auth.js redirige automáticamente
     }
+
+    // Auto-focus
+    document.getElementById('email').focus();
   </script>
+
 </body>
 </html>
