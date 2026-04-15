@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klindo | Monitor de Planta</title>
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="assets/css/main.css">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    body {
+       background-color: var(--bg-tertiary); /* Darker background for monitor */
+       margin: 0;
+       height: 100vh;
+       display: flex;
+       flex-direction: column;
+       overflow: hidden;
+    }
+    
+    .kds-header {
+       background-color: var(--bg-primary);
+       padding: 16px 24px;
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       border-bottom: 1px solid var(--border);
+    }
+
+    .kds-board {
+       flex: 1;
+       display: grid;
+       grid-template-columns: repeat(3, 1fr);
+       gap: 20px;
+       padding: 20px;
+       overflow-x: auto;
+       overflow-y: hidden;
+    }
+
+    .kds-column {
+       background-color: var(--bg-secondary);
+       border-radius: var(--radius-lg);
+       border: 1px solid var(--border);
+       display: flex;
+       flex-direction: column;
+       max-height: 100%;
+       overflow: hidden;
+    }
+
+    .kds-column-header {
+       padding: 16px;
+       font-weight: 800;
+       font-size: 1.1rem;
+       font-family: var(--font-display);
+       text-transform: uppercase;
+       border-bottom: 2px solid var(--border);
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+    }
+    
+    .col-recibido { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+    .col-lavado { color: var(--info); border-bottom-color: var(--info); }
+    .col-planchado { color: var(--warning); border-bottom-color: var(--warning); }
+
+    .kds-column-body {
+       padding: 16px;
+       flex: 1;
+       overflow-y: auto;
+       display: flex;
+       flex-direction: column;
+       gap: 16px;
+    }
+
+    .kds-card {
+       background: var(--bg-primary);
+       border: 1px solid var(--border);
+       border-radius: var(--radius-md);
+       padding: 16px;
+       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+       animation: fadeIn 0.3s ease;
+    }
+
+    .kds-card-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       border-bottom: 1px dashed var(--border);
+       padding-bottom: 12px;
+       margin-bottom: 12px;
+    }
+
+    .kds-items-list {
+       list-style: none;
+       padding: 0;
+       margin: 0;
+    }
+
+    .kds-items-list li {
+       font-size: 0.95rem;
+       font-weight: 600;
+       color: var(--text-secondary);
+       margin-bottom: 8px;
+       display: flex;
+       justify-content: space-between;
+    }
+
+    .kds-item-qty {
+       background: var(--brand-100);
+       color: var(--brand-600);
+       padding: 2px 8px;
+       border-radius: 4px;
+       font-weight: 800;
+       min-width: 30px;
+       text-align: center;
+    }
+
+    .kds-card-actions {
+       display: flex;
+       gap: 8px;
+       margin-top: 16px;
+    }
+
+    @keyframes fadeIn {
+       from { opacity: 0; transform: translateY(10px); }
+       to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="kds-header">
+     <div style="display:flex; align-items:center; gap:12px;">
+       <div style="width:40px; height:40px; background:var(--brand-500); color:white; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+          <i data-lucide="factory"></i>
+       </div>
+       <div>
+         <h1 style="font-family:var(--font-display); font-size:1.5rem; margin:0;" id="tenantNameDisplay">Monitor de Planta</h1>
+         <p style="font-size:0.8rem; color:var(--text-secondary); margin:0;" id="clockDisplay">00:00:00</p>
+       </div>
+     </div>
+     
+     <div style="display:flex; gap:12px;">
+       <a href="admin/index.html" class="btn btn-secondary btn-sm"><i data-lucide="arrow-left"></i> Volver a Admin</a>
+       <button id="logoutBtn" class="btn btn-ghost btn-sm" style="color:var(--danger);"><i data-lucide="power"></i></button>
+     </div>
+  </header>
+
+  <!-- Board -->
+  <main class="kds-board">
+     <!-- Columna 1 -->
+     <div class="kds-column">
+        <div class="kds-column-header col-recibido">
+           <span>1. Recibidos</span>
+           <span class="badge" id="countRecibidos" style="background:var(--bg-tertiary); color:var(--text-primary);">0</span>
+        </div>
+        <div class="kds-column-body" id="colRecibidos">
+           <!-- Cards -->
+        </div>
+     </div>
+
+     <!-- Columna 2 -->
+     <div class="kds-column">
+        <div class="kds-column-header col-lavado">
+           <span>2. Lavandería</span>
+           <span class="badge" id="countLavado" style="background:var(--info-bg); color:var(--info);">0</span>
+        </div>
+        <div class="kds-column-body" id="colLavanderia">
+           <!-- Cards -->
+        </div>
+     </div>
+
+     <!-- Columna 3 -->
+     <div class="kds-column">
+        <div class="kds-column-header col-planchado">
+           <span>3. Planchado</span>
+           <span class="badge" id="countPlanchado" style="background:var(--warning-bg); color:var(--warning);">0</span>
+        </div>
+        <div class="kds-column-body" id="colPlanchado">
+           <!-- Cards -->
+        </div>
+     </div>
+  </main>
+
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    let session_data = null;
+
+    async function init() {
+      session_data = await window.auth.protectAdminRoute();
+      if (!session_data) return;
+
+      document.getElementById('tenantNameDisplay').textContent = `${session_data.tenant.nombre} - Planta`;
+      
+      setInterval(() => {
+         document.getElementById('clockDisplay').textContent = new Date().toLocaleTimeString('es-DO');
+      }, 1000);
+
+      await loadBoard();
+      // Polling cada 10 segundos
+      setInterval(loadBoard, 10000);
+    }
+
+    async function loadBoard() {
+       try {
+          // Solicitamos ordenes activas
+          const { data: ordenes, error } = await window.supabaseClient
+             .from('ordenes_servicio')
+             .select('*, items_orden(*)')
+             .eq('tenant_id', session_data.tenant.id)
+             .in('estado', ['recibido', 'en_lavado', 'en_seco', 'en_planchado'])
+             .order('created_at', { ascending: true });
+
+          if (error) throw error;
+
+          const cols = {
+             recibidos: [],
+             lavanderia: [],
+             planchado: []
+          };
+
+          (ordenes || []).forEach(o => {
+             if (o.estado === 'recibido') cols.recibidos.push(o);
+             else if (o.estado === 'en_lavado' || o.estado === 'en_seco') cols.lavanderia.push(o);
+             else if (o.estado === 'en_planchado') cols.planchado.push(o);
+          });
+
+          renderColumn('colRecibidos', 'countRecibidos', cols.recibidos);
+          renderColumn('colLavanderia', 'countLavado', cols.lavanderia);
+          renderColumn('colPlanchado', 'countPlanchado', cols.planchado);
+
+       } catch (error) {
+          console.error("Error al cargar planta:", error);
+       }
+    }
+
+    function renderColumn(containerId, counterId, ordenes) {
+       document.getElementById(counterId).textContent = ordenes.length;
+       const container = document.getElementById(containerId);
+       
+       if (ordenes.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:40px 0; color:var(--text-muted); opacity:0.5;">
+              <i data-lucide="check-circle" style="width:48px; height:48px; margin-bottom:12px;"></i>
+              <p>Despejado</p>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+       }
+
+       let html = '';
+       ordenes.forEach(o => {
+          let timeMsg = '';
+          const minutes = Math.floor((new Date() - new Date(o.created_at)) / 60000);
+          if (minutes > 60) {
+             const hrs = Math.floor(minutes/60);
+             timeMsg = `<span style="color:var(--danger); font-weight:700;"><i data-lucide="clock" style="display:inline; width:12px; margin-right:4px;"></i>Hace ${hrs}h ${minutes%60}m</span>`;
+          } else {
+             timeMsg = `<span style="color:var(--text-secondary);"><i data-lucide="clock" style="display:inline; width:12px; margin-right:4px;"></i>Hace ${minutes} min</span>`;
+          }
+
+          let itemsHtml = (o.items_orden || []).map(i => `
+             <li>
+               <span style="flex:1;">${i.servicio_nombre}</span>
+               <span class="kds-item-qty">x${i.cantidad}</span>
+             </li>
+          `).join('');
+
+          let actionsHtml = '';
+          if (o.estado === 'recibido') {
+             actionsHtml = `
+               <button class="btn btn-sm btn-block" style="background:var(--info-bg); color:var(--info); border:1px solid var(--info-border);" onclick="changeState('${o.id}', 'en_lavado')">Lavar</button>
+               <button class="btn btn-sm btn-block" style="background:var(--info-bg); color:var(--info); border:1px solid var(--info-border);" onclick="changeState('${o.id}', 'en_seco')">Lavado Seco</button>
+             `;
+          } else if (o.estado === 'en_lavado' || o.estado === 'en_seco') {
+             actionsHtml = `
+               <button class="btn btn-sm btn-block" style="background:var(--warning-bg); color:var(--warning); border:1px solid var(--warning-border);" onclick="changeState('${o.id}', 'en_planchado')">Pasar a Planchado</button>
+               <button class="btn btn-sm btn-block" style="background:var(--success-bg); color:var(--success); border:1px solid var(--success-border);" onclick="changeState('${o.id}', 'listo')">Terminar (Listo)</button>
+             `;
+          } else if (o.estado === 'en_planchado') {
+             actionsHtml = `
+               <button class="btn btn-sm btn-block" style="background:var(--success-bg); color:var(--success); border:1px solid var(--success-border);" onclick="changeState('${o.id}', 'listo')">Terminar (Listo)</button>
+             `;
+          }
+
+          html += `
+            <div class="kds-card">
+               <div class="kds-card-header">
+                  <div style="font-weight:800; font-family:monospace; font-size:1.2rem; color:var(--text-primary);">#${o.numero_orden || o.numero_dia}</div>
+                  <div style="font-size:0.8rem;">${timeMsg}</div>
+               </div>
+               <div style="margin-bottom:12px; font-weight:600; color:var(--brand-600);">${o.cliente_nombre}</div>
+               
+               <ul class="kds-items-list">
+                  ${itemsHtml}
+               </ul>
+               
+               ${o.notas_recepcion ? `<div style="margin-top:12px; padding:8px; background:var(--warning-bg); border:1px solid var(--warning-border); border-radius:var(--radius-sm); font-size:0.8rem; color:var(--warning);"><i data-lucide="alert-triangle" style="display:inline; width:12px; margin-right:4px;"></i>${o.notas_recepcion}</div>` : ''}
+               
+               <div class="kds-card-actions">
+                  ${actionsHtml}
+               </div>
+            </div>
+          `;
+       });
+
+       container.innerHTML = html;
+       lucide.createIcons();
+    }
+
+    window.changeState = async function(id, newState) {
+       const { error } = await window.supabaseClient.from('ordenes_servicio').update({ estado: newState }).eq('id', id);
+       if (error) {
+          alert("Error al actualizar la orden: " + error.message);
+          return;
+       }
+       await loadBoard();
+    };
+
+    document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
+
+    init();
+  </script>
+</body>
+</html>

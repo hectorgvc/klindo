@@ -3,513 +3,327 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configuración | Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <title>Klindo | Configuración</title>
+  <!-- Main CSS -->
   <link rel="stylesheet" href="../assets/css/main.css">
-  <style>
-    .color-preview {
-      width: 100%;
-      height: 40px;
-      border-radius: 8px;
-      border: 2px solid #2a2a2a;
-      cursor: pointer;
-    }
-  </style>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
-<body class="bg-[#0a0a0a] text-[#f5f5f5]">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-[#f97316] rounded-lg flex items-center justify-center">
-          <i data-lucide="utensils" class="w-5 h-5 text-white"></i>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="droplets"></i>
         </div>
-        <div>
-          <p class="font-display text-lg">Fast Orden</p>
-          <p class="text-xs text-[#9ca3af]">Admin Portal</p>
+        <div class="sidebar-logo-text">
+          Klin<span>do</span>
         </div>
       </div>
-    </div>
-
-    <nav class="sidebar-nav" id="sidebarNav">
-      <a href="index.html" class="sidebar-link">
-        <i data-lucide="layout-dashboard"></i>
-        <span>Dashboard</span>
-      </a>
-      <a href="productos.html" class="sidebar-link">
-        <i data-lucide="package"></i>
-        <span>Productos</span>
-      </a>
-      <a href="categorias.html" class="sidebar-link">
-        <i data-lucide="tags"></i>
-        <span>Categorías</span>
-      </a>
-      <a href="ofertas.html" class="sidebar-link">
-        <i data-lucide="tag"></i>
-        <span>Ofertas</span>
-      </a>
-      <a href="cuentas.html" class="sidebar-link">
-        <i data-lucide="building-2"></i>
-        <span>Cuentas Bancarias</span>
-      </a>
-
-      <!-- Divider para módulos Pro -->
-      <div id="proModulesDivider" class="hidden border-t border-[#2a2a2a] my-2"></div>
-      <p id="proModulesLabel" class="hidden px-4 py-2 text-xs text-[#9ca3af] uppercase tracking-wider">Módulos Pro</p>
-
-      <!-- Módulos Pro -->
-      <a id="cajaLink" href="#" class="sidebar-link hidden">
-        <i data-lucide="receipt"></i>
-        <span>Caja</span>
-      </a>
-      <a id="cocinaLink" href="#" class="sidebar-link hidden">
-        <i data-lucide="chef-hat"></i>
-        <span>Cocina</span>
-      </a>
-      <a id="turnosLink" href="#" class="sidebar-link hidden">
-        <i data-lucide="calendar-clock"></i>
-        <span>Turnos</span>
-      </a>
       
-      <a id="pedidosLink" href="#" class="sidebar-link hidden">
-        <i data-lucide="clipboard-list"></i>
-        <span>Pedidos</span>
-      </a>
-      <a id="repartidoresLink" href="#" class="sidebar-link hidden">
-        <i data-lucide="bike"></i>
-        <span>Repartidores</span>
-      </a>
-      <a id="notasLink" href="#" class="sidebar-link hidden">
-        <i data-lucide="sticky-note"></i>
-        <span>Notas</span>
-      </a>
-      <a id="dashboardProLink" href="#" class="sidebar-link hidden">
-        <i data-lucide="bar-chart-3"></i>
-        <span>Dashboard Avanzado</span>
-      </a>
-
-      <!-- Items bloqueados para plan Lite -->
-      <a id="cajaLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
-        <i data-lucide="receipt"></i>
-        <span>Caja</span>
-        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
-      </a>
-      <a id="cocinaLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
-        <i data-lucide="chef-hat"></i>
-        <span>Cocina</span>
-        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
-      </a>
-      <a id="turnosLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
-        <i data-lucide="calendar-clock"></i>
-        <span>Turnos</span>
-        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
-      </a>
-      
-      <a id="pedidosLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
-        <i data-lucide="clipboard-list"></i>
-        <span>Pedidos</span>
-        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
-      </a>
-      <a id="repartidoresLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
-        <i data-lucide="bike"></i>
-        <span>Repartidores</span>
-        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
-      </a>
-      <a id="notasLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
-        <i data-lucide="sticky-note"></i>
-        <span>Notas</span>
-        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
-      </a>
-      <a id="dashboardProLinkLite" href="#" class="sidebar-link hidden opacity-60 cursor-not-allowed" onclick="showProFeatureMessage(event)">
-        <i data-lucide="bar-chart-3"></i>
-        <span>Dashboard Avanzado</span>
-        <i data-lucide="lock" class="w-3 h-3 ml-auto text-[#9ca3af]"></i>
-      </a>
-
-      <a href="configuracion.html" class="sidebar-link active">
-        <i data-lucide="settings"></i>
-        <span>Configuración</span>
-      </a>
-    </nav>
-
-    <div class="mt-auto shrink-0 p-4 border-t border-[#2a2a2a]">
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-8 h-8 bg-[#1f1f1f] rounded-full flex items-center justify-center">
-          <i data-lucide="user" class="w-4 h-4"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p id="userName" class="text-sm font-medium truncate">Cargando...</p>
-        </div>
-      </div>
-      <button id="logoutBtn" class="btn btn-ghost w-full justify-start">
-        <i data-lucide="log-out" class="w-4 h-4"></i>
-        <span>Cerrar Sesión</span>
-      </button>
-    </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="font-display text-3xl">Configuración</h1>
-      <p class="text-[#9ca3af]">Personaliza tu menú digital</p>
-    </div>
-
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-      <!-- Formulario -->
-      <div class="xl:col-span-2 space-y-6">
-        <!-- Información del Negocio -->
-        <div class="card p-6">
-          <h2 class="font-display text-xl mb-6 flex items-center gap-2">
-            <i data-lucide="store" class="w-5 h-5 text-[#f97316]"></i>
-            Información del Negocio
-          </h2>
-
-          <div class="space-y-5">
-            <div>
-              <label class="form-label">Nombre del Negocio *</label>
-              <input type="text" id="businessName" class="form-input" required>
-            </div>
-
-            <div>
-              <label class="form-label">Slogan</label>
-              <input type="text" id="businessSlogan" class="form-input" placeholder="Tu eslogan aquí...">
-            </div>
-
-            <div>
-              <label class="form-label">WhatsApp de Pedidos *</label>
-              <div class="relative">
-                <i data-lucide="phone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#22c55e]"></i>
-                <input type="tel" id="businessWhatsapp" class="form-input pl-12" placeholder="8090000000" required>
-              </div>
-              <p class="text-xs text-[#9ca3af] mt-1">Número donde recibirás los pedidos por WhatsApp</p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="form-label">Moneda</label>
-                <select id="businessCurrency" class="form-input">
-                  <option value="RD$">RD$ - Peso Dominicano</option>
-                  <option value="USD">$ - Dólar</option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label">Costo de Delivery</label>
-                <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#9ca3af]">$</span>
-                  <input type="number" id="businessDelivery" class="form-input pl-10" min="0" step="0.01">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Apariencia -->
-        <div class="card p-6">
-          <h2 class="font-display text-xl mb-6 flex items-center gap-2">
-            <i data-lucide="palette" class="w-5 h-5 text-[#f97316]"></i>
-            Apariencia
-          </h2>
-
-          <div class="space-y-5">
-            <!-- Logo -->
-            <div>
-              <label class="form-label">Logo</label>
-              <div id="logoPreview" class="hidden mb-3 w-32 h-32 bg-[#1f1f1f] rounded-xl overflow-hidden">
-                <img id="previewLogoImg" src="" alt="Logo" class="w-full h-full object-contain">
-              </div>
-              <div class="flex gap-3">
-                <input type="file" id="logoInput" accept="image/*" class="hidden">
-                <button type="button" id="selectLogoBtn" class="btn btn-secondary btn-sm">
-                  <i data-lucide="image-plus" class="w-4 h-4"></i>
-                  <span id="logoBtnText">Subir logo</span>
-                </button>
-                <button type="button" id="removeLogoBtn" class="btn btn-ghost btn-sm text-[#ef4444] hidden">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Colores -->
-            <div class="grid grid-cols-2 gap-6">
-              <div>
-                <label class="form-label">Color Primario</label>
-                <div class="flex items-center gap-3">
-                  <input type="color" id="primaryColor" class="w-16 h-10 rounded cursor-pointer">
-                  <input type="text" id="primaryColorHex" class="form-input flex-1" placeholder="#f97316">
-                </div>
-              </div>
-              <div>
-                <label class="form-label">Color de Acento</label>
-                <div class="flex items-center gap-3">
-                  <input type="color" id="accentColor" class="w-16 h-10 rounded cursor-pointer">
-                  <input type="text" id="accentColorHex" class="form-input flex-1" placeholder="#facc15">
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Horario de Atención -->
-        <div class="card p-6">
-          <h2 class="font-display text-xl mb-6 flex items-center gap-2">
-            <i data-lucide="clock" class="w-5 h-5 text-[#f97316]"></i>
-            Horario de Atención
-          </h2>
-
-          <div class="space-y-5">
-            <div>
-              <label class="form-label mb-3 block">Días Laborales</label>
-              <div class="flex flex-wrap gap-3">
-                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
-                  <input type="checkbox" value="lunes" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales">
-                  <span class="text-sm">Lun</span>
-                </label>
-                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
-                  <input type="checkbox" value="martes" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
-                  <span class="text-sm">Mar</span>
-                </label>
-                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
-                  <input type="checkbox" value="miercoles" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
-                  <span class="text-sm">Mié</span>
-                </label>
-                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
-                  <input type="checkbox" value="jueves" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
-                  <span class="text-sm">Jue</span>
-                </label>
-                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
-                  <input type="checkbox" value="viernes" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
-                  <span class="text-sm">Vie</span>
-                </label>
-                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
-                  <input type="checkbox" value="sabado" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
-                  <span class="text-sm">Sáb</span>
-                </label>
-                <label class="flex items-center gap-2 bg-[#1f1f1f] px-3 py-2 rounded-lg border border-[#2a2a2a] cursor-pointer hover:border-[#f97316] transition-colors">
-                  <input type="checkbox" value="domingo" class="w-4 h-4 rounded border-[#2a2a2a] text-[#f97316] bg-[#141414] focus:ring-[#f97316]" name="diasLaborales" checked>
-                  <span class="text-sm">Dom</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="form-label">Hora de Apertura</label>
-                <div class="relative">
-                  <input type="time" id="businessOpenTime" class="form-input">
-                </div>
-              </div>
-              <div>
-                <label class="form-label">Hora de Cierre</label>
-                <div class="relative">
-                  <input type="time" id="businessCloseTime" class="form-input">
-                </div>
-              </div>
-            </div>
-
-            <div class="pt-4 border-t border-[#2a2a2a]">
-              <label class="flex items-center justify-between cursor-pointer">
-                <div>
-                  <span class="font-semibold block text-base">Abrir ahora manualmente</span>
-                  <span class="text-xs text-[#9ca3af]">Forza el estado a abierto, ignorando el horario.</span>
-                </div>
-                <input type="checkbox" id="manualOpenToggle" class="w-5 h-5 rounded border-[#2a2a2a] text-[#f97316] focus:ring-[#f97316]">
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Botón Guardar -->
-        <div class="flex gap-4">
-          <button id="resetBtn" type="button" class="btn btn-secondary">
-            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-            <span>Restablecer</span>
-          </button>
-          <button id="saveBtn" class="btn btn-primary flex-1">
-            <span id="saveBtnText">Guardar Cambios</span>
-          </button>
-        </div>
+      <div class="sidebar-tenant" id="tenantNameDisplay">
+        ...
       </div>
 
-      <!-- Preview -->
-      <div class="xl:col-span-1">
-        <div class="sticky top-24">
-          <h3 class="font-display text-lg mb-4">Vista Previa</h3>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Gestión</div>
+        <a href="index.html" class="sidebar-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="ordenes.html" class="sidebar-link">
+          <i data-lucide="file-text"></i>
+          <span>Historial Órdenes</span>
+        </a>
+        <a href="servicios.html" class="sidebar-link">
+          <i data-lucide="list"></i>
+          <span>Servicios y Precios</span>
+        </a>
+        <a href="clientes.html" class="sidebar-link">
+          <i data-lucide="users"></i>
+          <span>Directorio Clientes</span>
+        </a>
 
-          <div id="previewCard" class="card overflow-hidden">
-            <!-- Header Preview -->
-            <div id="previewHeader" class="p-6 text-center">
-              <div id="previewLogoContainer" class="w-16 h-16 mx-auto mb-3 rounded-full bg-[#1f1f1f] flex items-center justify-center hidden">
-                <img id="previewLogo" src="" alt="" class="w-full h-full object-cover rounded-full">
-              </div>
-              <h4 id="previewName" class="font-display text-2xl">Tu Negocio</h4>
-              <p id="previewSlogan" class="text-sm text-[#9ca3af] mt-1">Tu slogan aquí</p>
-            </div>
+        <div class="sidebar-section-label" style="margin-top:12px;">Negocio</div>
+        <a href="configuracion.html" class="sidebar-link active">
+          <i data-lucide="settings"></i>
+          <span>Configuración</span>
+        </a>
+        <a href="repartidores.html" class="sidebar-link" id="navRepartidores" style="display:none;">
+          <i data-lucide="bike"></i>
+          <span>Delivery</span>
+        </a>
 
-            <!-- Product Card Preview -->
-            <div class="p-4 bg-[#1f1f1f]">
-              <div class="bg-[#141414] rounded-xl p-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-16 h-16 bg-[#2a2a2a] rounded-lg flex items-center justify-center">
-                    <i data-lucide="utensils" class="w-6 h-6 text-[#4a4a4a]"></i>
-                  </div>
-                  <div class="flex-1">
-                    <p class="font-medium">Producto de Ejemplo</p>
-                    <p class="text-sm text-[#9ca3af]">Descripción del producto</p>
-                  </div>
-                  <div class="text-right">
-                    <p id="previewPrice" class="font-display text-xl">RD$250</p>
-                    <button id="previewButton" class="mt-2 px-3 py-1 rounded-lg text-sm text-white">Agregar</button>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="sidebar-section-label" style="margin-top:12px;">Operación App</div>
+        <a href="../recepcion.html" class="sidebar-link">
+          <i data-lucide="shopping-bag"></i>
+          <span>Terminal Recepción</span>
+        </a>
+        <a href="../planta.html" class="sidebar-link">
+          <i data-lucide="factory"></i>
+          <span>Monitor de Planta</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom: 12px;">
+          <div class="avatar">
+            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
           </div>
-
-          <div class="mt-4 p-4 bg-[#1f1f1f] rounded-xl">
-            <p class="text-sm text-[#9ca3af] mb-2">URL de tu menú:</p>
-            <div class="flex gap-2">
-              <input type="text" id="menuUrl" readonly class="form-input text-sm bg-[#0a0a0a]">
-              <button id="copyUrlBtn" class="btn btn-secondary btn-sm">
-                <i data-lucide="copy" class="w-4 h-4"></i>
-              </button>
-            </div>
+          <div style="flex:1; min-width:0;">
+            <div id="userName" style="font-weight:700; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cargando...</div>
+            <div id="userRole" style="font-size:0.75rem; color:var(--brand-500); font-weight:600; text-transform:capitalize;">Admin</div>
           </div>
         </div>
+        <button id="logoutBtn" class="btn btn-ghost btn-block" style="justify-content: flex-start;">
+          <i data-lucide="log-out"></i>
+          <span>Cerrar Sesión</span>
+        </button>
       </div>
-    </div>
-  </main>
+    </aside>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 right-4 bg-[#22c55e] text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-[300] flex items-center gap-2">
-    <i data-lucide="check-circle" class="w-5 h-5"></i>
-    <span id="toastMessage">Cambios guardados</span>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-title">Configuración del Negocio</div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="page-content" style="max-width: 1000px;">
+        <div class="page-header">
+           <div>
+             <h1 class="page-title">Datos y Preferencias</h1>
+             <p class="page-subtitle">Ajusta los detalles de tu lavandería y opciones de marca</p>
+           </div>
+           <div style="display:flex; gap:12px;">
+             <button id="resetBtn" class="btn btn-secondary">Descartar Cambios</button>
+             <button id="saveBtn" class="btn btn-primary"><span id="saveBtnText">Guardar Configuración</span></button>
+           </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px;">
+           <!-- Col Izquierda -->
+           <div style="display:flex; flex-direction:column; gap:24px;">
+              <div class="card">
+                 <div class="card-header">
+                    <h3 class="card-title">Información General</h3>
+                 </div>
+                 <div class="card-body">
+                    <div class="form-grid">
+                       <div class="form-group" style="grid-column: 1 / -1;">
+                         <label class="form-label">Nombre Comercial</label>
+                         <input type="text" id="businessName" class="form-control" required>
+                       </div>
+                       
+                       <div class="form-group">
+                         <label class="form-label">WhatsApp Corporativo</label>
+                         <div style="position:relative;">
+                           <i data-lucide="phone" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--success); width:18px;"></i>
+                           <input type="tel" id="businessWhatsapp" class="form-control" style="padding-left: 42px;">
+                         </div>
+                       </div>
+                       
+                       <div class="form-group">
+                         <label class="form-label">Teléfono Local</label>
+                         <div style="position:relative;">
+                           <i data-lucide="phone-call" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-muted); width:18px;"></i>
+                           <input type="tel" id="businessPhone" class="form-control" style="padding-left: 42px;">
+                         </div>
+                       </div>
+                       
+                       <div class="form-group" style="grid-column: 1 / -1;">
+                         <label class="form-label">Dirección Física</label>
+                         <textarea id="businessAddress" class="form-control" rows="2" placeholder="Local, Calle, Ciudad"></textarea>
+                       </div>
+
+                       <div class="form-group">
+                         <label class="form-label">Moneda Operativa</label>
+                         <select id="businessCurrency" class="form-control">
+                           <option value="RD$">RD$ - Peso Dominicano</option>
+                           <option value="USD">USD$ - Dólar</option>
+                           <option value="EUR">€ - Euro</option>
+                         </select>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              <!-- Módulo Delivery -->
+              <div class="card">
+                 <div class="card-header">
+                    <h3 class="card-title" style="display:flex; align-items:center; gap:8px;">
+                       <i data-lucide="bike" style="color:var(--brand-500); width:18px;"></i>
+                       Opciones de Delivery
+                    </h3>
+                 </div>
+                 <div class="card-body">
+                    <div class="form-group" style="flex-direction:row; align-items:center; gap:10px; margin-bottom:16px; padding:12px; background:var(--bg-secondary); border-radius:var(--radius-md); border:1px solid var(--border);">
+                       <input type="checkbox" id="deliveryActive" style="width: 18px; height: 18px; accent-color: var(--brand-500);">
+                       <label for="deliveryActive" style="font-weight:700; font-size:0.9rem;">Habilitar envíos a domicilio</label>
+                    </div>
+
+                    <div class="form-grid" id="deliverySettingsBox" style="transition: opacity 0.3s; opacity:0.5; pointer-events:none;">
+                       <div class="form-group">
+                          <label class="form-label">Tarifa Base (Mínima)</label>
+                          <input type="number" id="deliveryBaseCost" class="form-control" step="0.01" min="0">
+                       </div>
+                       <div class="form-group">
+                          <label class="form-label">Radio de Cobertura (Km)</label>
+                          <input type="number" id="deliveryRadius" class="form-control" min="1" max="100">
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+           <!-- Col Derecha -->
+           <div style="display:flex; flex-direction:column; gap:24px;">
+              <!-- Apariencia -->
+              <div class="card">
+                 <div class="card-header">
+                    <h3 class="card-title">Identidad Visual</h3>
+                 </div>
+                 <div class="card-body">
+                    <div class="form-group" style="margin-bottom:20px;">
+                       <label class="form-label">Logo Empresarial</label>
+                       
+                       <div id="logoPreview" style="display:none; width: 100px; height: 100px; background:var(--bg-tertiary); border-radius:var(--radius-md); overflow:hidden; margin-bottom:12px; border:1px solid var(--border);">
+                         <img id="previewLogoImg" src="" alt="Logo" style="width:100%; height:100%; object-fit:contain;">
+                       </div>
+                       
+                       <div style="display:flex; gap:8px;">
+                         <input type="file" id="logoInput" accept="image/*" style="display:none;">
+                         <button type="button" id="selectLogoBtn" class="btn btn-secondary btn-sm" style="flex:1; justify-content:center;">
+                           <i data-lucide="upload"></i> <span id="logoBtnText">Subir</span>
+                         </button>
+                         <button type="button" id="removeLogoBtn" class="btn btn-secondary btn-sm" style="display:none; color:var(--danger); border-color:var(--danger-border); background:var(--danger-bg);">
+                           <i data-lucide="trash"></i>
+                         </button>
+                       </div>
+                    </div>
+
+                    <div class="form-group">
+                       <label class="form-label">Color de Marca</label>
+                       <div style="display:flex; align-items:center; gap:12px;">
+                          <input type="color" id="brandColor" style="width:40px; height:40px; padding:0; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer;">
+                          <input type="text" id="brandColorHex" class="form-control" style="font-family:monospace; font-size:0.85rem;" placeholder="#0ea5e9">
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              <!-- Herramientas útiles -->
+              <div class="card">
+                 <div class="card-body" style="background:var(--brand-50); border-radius:var(--radius-lg);">
+                    <p style="font-weight:700; font-size:0.9rem; color:var(--brand-700); margin-bottom:8px;">Acceso Rápido Clientes</p>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">Con este link o código tu personal y clientes pueden ver detalles públicos (si los habilitas).</p>
+                    
+                    <div style="display:flex; gap:8px;">
+                      <input type="text" id="publicUrl" readonly class="form-control" style="background:var(--bg-primary); font-size:0.8rem; flex:1;">
+                      <button id="copyUrlBtn" class="btn btn-primary btn-sm">Copiar</button>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+      </div>
+    </main>
   </div>
 
-  <!-- Scripts -->
+  <!-- Toast -->
+  <div id="toast" class="toast-container">
+    <div class="toast toast-success" id="toastBox">
+      <i data-lucide="check-circle" id="toastIcon"></i>
+      <span id="toastMessage">Operación exitosa</span>
+    </div>
+  </div>
+
   <script src="../assets/js/supabase.js"></script>
   <script src="../assets/js/auth.js"></script>
   <script>
     lucide.createIcons();
 
-    let tenantId = null;
-    let currentTenant = null;
+    let session_data = null;
     let selectedLogo = null;
     let currentLogoUrl = null;
 
     async function init() {
-      const profile = await window.auth.protectAdminRoute();
-      if (!profile) return;
+      session_data = await window.auth.protectAdminRoute();
+      if (!session_data) return;
 
-      document.getElementById('userName').textContent = profile.nombre;
-      tenantId = sessionStorage.getItem('tenant_id');
-      currentTenant = profile.tenants;
-
-      if (currentTenant) {
-        loadTenantData();
-        updatePreview();
+      document.getElementById('userName').textContent = session_data.profile.nombre;
+      document.getElementById('userRole').textContent = session_data.profile.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenant.nombre;
+      
+      if (session_data.tenant.plan === 'pro') {
+         document.getElementById('navRepartidores').style.display = 'flex';
       }
 
-      // Renderizar menú según el plan
-      renderSidebarMenu();
-
-      lucide.createIcons();
+      loadTenantData();
     }
 
     function loadTenantData() {
-      // Campos del formulario
-      document.getElementById('businessName').value = currentTenant.nombre || '';
-      document.getElementById('businessSlogan').value = currentTenant.slogan || '';
-      document.getElementById('businessWhatsapp').value = currentTenant.whatsapp || '';
-      document.getElementById('businessCurrency').value = currentTenant.moneda || 'RD$';
-      document.getElementById('businessDelivery').value = currentTenant.costo_delivery || 50;
+      const t = session_data.tenant;
+      document.getElementById('businessName').value = t.nombre || '';
+      document.getElementById('businessWhatsapp').value = t.whatsapp || '';
+      document.getElementById('businessPhone').value = t.telefono || '';
+      document.getElementById('businessAddress').value = t.direccion || '';
+      document.getElementById('businessCurrency').value = t.moneda || 'RD$';
+      
+      // Delivery
+      const deliveryStatus = typeof t.modulo_delivery_activo === 'boolean' ? t.modulo_delivery_activo : false;
+      document.getElementById('deliveryActive').checked = deliveryStatus;
+      toggleDeliveryFields(deliveryStatus);
 
-      // Horarios — Supabase devuelve '18:30:00', el input time necesita 'HH:MM'
-      if (currentTenant.dias_laborales) {
-        document.querySelectorAll('input[name="diasLaborales"]').forEach(cb => {
-          cb.checked = currentTenant.dias_laborales.includes(cb.value);
-        });
-      }
-      const rawApertura = currentTenant.hora_apertura || '11:00';
-      const rawCierre = currentTenant.hora_cierre || '23:00';
-      const apertura = rawApertura.substring(0, 5);
-      const cierre = rawCierre.substring(0, 5);
-      console.log('=== DEBUG Horarios ===');
-      console.log('Raw apertura:', rawApertura, '→', apertura);
-      console.log('Raw cierre:', rawCierre, '→', cierre);
-      console.log('Dias laborales:', currentTenant.dias_laborales);
-      console.log('Abierto manual:', currentTenant.abierto_manual);
-      document.getElementById('businessOpenTime').value = apertura;
-      document.getElementById('businessCloseTime').value = cierre;
-      document.getElementById('manualOpenToggle').checked = currentTenant.abierto_manual || false;
+      document.getElementById('deliveryBaseCost').value = t.delivery_costo_base || 0;
+      document.getElementById('deliveryRadius').value = t.delivery_radio_km || 5;
 
-      // Colores
-      document.getElementById('primaryColor').value = currentTenant.color_primary || '#f97316';
-      document.getElementById('primaryColorHex').value = currentTenant.color_primary || '#f97316';
-      document.getElementById('accentColor').value = currentTenant.color_accent || '#facc15';
-      document.getElementById('accentColorHex').value = currentTenant.color_accent || '#facc15';
+      // Color
+      document.getElementById('brandColor').value = t.color_marca || '#0ea5e9';
+      document.getElementById('brandColorHex').value = t.color_marca || '#0ea5e9';
 
       // Logo
-      if (currentTenant.logo_url) {
-        currentLogoUrl = currentTenant.logo_url;
-        document.getElementById('previewLogoImg').src = currentTenant.logo_url;
-        document.getElementById('previewLogo').src = currentTenant.logo_url;
-        document.getElementById('logoPreview').classList.remove('hidden');
-        document.getElementById('previewLogoContainer').classList.remove('hidden');
-        document.getElementById('removeLogoBtn').classList.remove('hidden');
-        document.getElementById('logoBtnText').textContent = 'Cambiar logo';
+      if (t.logo_url) {
+        currentLogoUrl = t.logo_url;
+        document.getElementById('previewLogoImg').src = t.logo_url;
+        document.getElementById('logoPreview').style.display = 'block';
+        document.getElementById('removeLogoBtn').style.display = 'flex';
+        document.getElementById('logoBtnText').textContent = 'Cambiar';
       }
 
-      // URL
-      const baseUrl = window.location.origin;
-      document.getElementById('menuUrl').value = `${baseUrl}/menu.html?tenant=${currentTenant.slug}`;
+      // Link
+      document.getElementById('publicUrl').value = `${window.location.host}/${t.slug}`;
     }
 
-    function updatePreview() {
-      const nombre = document.getElementById('businessName').value || 'Tu Negocio';
-      const slogan = document.getElementById('businessSlogan').value || 'Tu slogan aquí';
-      const moneda = document.getElementById('businessCurrency').value || 'RD$';
-      const primaryColor = document.getElementById('primaryColor').value || '#f97316';
-
-      document.getElementById('previewName').textContent = nombre;
-      document.getElementById('previewSlogan').textContent = slogan;
-      document.getElementById('previewPrice').textContent = `${moneda}250`;
-      document.getElementById('previewButton').style.backgroundColor = primaryColor;
-      document.getElementById('previewName').style.color = primaryColor;
+    // Toggle logic for Delivery Fields
+    document.getElementById('deliveryActive').addEventListener('change', (e) => toggleDeliveryFields(e.target.checked));
+    function toggleDeliveryFields(checked) {
+       const box = document.getElementById('deliverySettingsBox');
+       if (checked) {
+          box.style.opacity = '1';
+          box.style.pointerEvents = 'auto';
+       } else {
+          box.style.opacity = '0.5';
+          box.style.pointerEvents = 'none';
+       }
     }
 
-    // Event listeners para preview en tiempo real
-    ['businessName', 'businessSlogan', 'businessCurrency'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updatePreview);
+    // Colors sync
+    document.getElementById('brandColor').addEventListener('input', (e) => {
+      document.getElementById('brandColorHex').value = e.target.value;
     });
-
-    // Color pickers
-    document.getElementById('primaryColor').addEventListener('input', (e) => {
-      document.getElementById('primaryColorHex').value = e.target.value;
-      updatePreview();
-    });
-
-    document.getElementById('primaryColorHex').addEventListener('input', (e) => {
+    document.getElementById('brandColorHex').addEventListener('input', (e) => {
       if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) {
-        document.getElementById('primaryColor').value = e.target.value;
-        updatePreview();
+        document.getElementById('brandColor').value = e.target.value;
       }
     });
 
-    document.getElementById('accentColor').addEventListener('input', (e) => {
-      document.getElementById('accentColorHex').value = e.target.value;
-    });
-
-    document.getElementById('accentColorHex').addEventListener('input', (e) => {
-      if (e.target.value.match(/^#[0-9A-Fa-f]{6}$/)) {
-        document.getElementById('accentColor').value = e.target.value;
-      }
-    });
-
-    // Logo upload
+    // Logo Logic
     document.getElementById('selectLogoBtn').addEventListener('click', () => {
       document.getElementById('logoInput').click();
     });
@@ -521,11 +335,9 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           document.getElementById('previewLogoImg').src = e.target.result;
-          document.getElementById('previewLogo').src = e.target.result;
-          document.getElementById('logoPreview').classList.remove('hidden');
-          document.getElementById('previewLogoContainer').classList.remove('hidden');
-          document.getElementById('removeLogoBtn').classList.remove('hidden');
-          document.getElementById('logoBtnText').textContent = 'Cambiar logo';
+          document.getElementById('logoPreview').style.display = 'block';
+          document.getElementById('removeLogoBtn').style.display = 'flex';
+          document.getElementById('logoBtnText').textContent = 'Cambiar';
         };
         reader.readAsDataURL(file);
       }
@@ -535,70 +347,32 @@
       selectedLogo = null;
       currentLogoUrl = null;
       document.getElementById('logoInput').value = '';
-      document.getElementById('logoPreview').classList.add('hidden');
-      document.getElementById('previewLogoContainer').classList.add('hidden');
-      document.getElementById('removeLogoBtn').classList.add('hidden');
-      document.getElementById('logoBtnText').textContent = 'Subir logo';
+      document.getElementById('logoPreview').style.display = 'none';
+      document.getElementById('removeLogoBtn').style.display = 'none';
+      document.getElementById('logoBtnText').textContent = 'Subir Logo';
     });
 
-    // Restablecer
-    document.getElementById('resetBtn').addEventListener('click', () => {
-      loadTenantData();
-      updatePreview();
-    });
+    // Save and actions
+    document.getElementById('resetBtn').addEventListener('click', () => loadTenantData());
 
-    // Copiar URL
     document.getElementById('copyUrlBtn').addEventListener('click', () => {
-      const url = document.getElementById('menuUrl').value;
-      navigator.clipboard.writeText(url).then(() => {
-        showToast('URL copiada al portapapeles');
-      });
+       navigator.clipboard.writeText(document.getElementById('publicUrl').value);
+       showToast('Link copiado al portapapeles', 'success');
     });
 
-    // Guardar
     document.getElementById('saveBtn').addEventListener('click', async () => {
-      const nombre = document.getElementById('businessName').value;
-      const slogan = document.getElementById('businessSlogan').value;
-      const whatsapp = document.getElementById('businessWhatsapp').value;
-      const moneda = document.getElementById('businessCurrency').value;
-      const costo_delivery = parseFloat(document.getElementById('businessDelivery').value) || 0;
-      const color_primary = document.getElementById('primaryColor').value;
-      const color_accent = document.getElementById('accentColor').value;
-      const dias_laborales = Array.from(document.querySelectorAll('input[name="diasLaborales"]:checked')).map(cb => cb.value);
-      
-      const horaApertura = document.getElementById('businessOpenTime').value;
-      const horaCierre = document.getElementById('businessCloseTime').value;
-      const abiertoManual = document.getElementById('manualOpenToggle').checked;
-
-      console.log('=== INICIO GUARDAR ===');
-      console.log('Guardando apertura:', horaApertura);
-      console.log('Guardando cierre:', horaCierre);
-      console.log('Guardando abierto_manual:', abiertoManual);
-      console.log('tenantId:', tenantId);
-      console.log('Payload dias_laborales:', dias_laborales);
-
-      if (!nombre || !whatsapp) {
-        showToast('Completa los campos requeridos', 'error');
-        return;
-      }
-
-      if (!tenantId) {
-        showToast('Error: No se pudo identificar el tenant', 'error');
-        console.error('ERROR CRITICO: tenantId es null o undefined');
-        return;
-      }
-
+      const btnText = document.getElementById('saveBtnText');
       document.getElementById('saveBtn').disabled = true;
-      document.getElementById('saveBtnText').textContent = 'Guardando...';
+      btnText.textContent = 'Guardando...';
 
       try {
         let logo_url = currentLogoUrl;
 
-        // Subir logo si hay uno nuevo
+        // Subir logo nuevo si existe
         if (selectedLogo) {
           const fileExt = selectedLogo.name.split('.').pop();
           const fileName = `logo-${Date.now()}.${fileExt}`;
-          const filePath = `${tenantId}/logo/${fileName}`;
+          const filePath = `${session_data.tenant.id}/logo/${fileName}`;
 
           const { error: uploadError } = await window.supabaseClient.storage
             .from('tenant-assets')
@@ -611,155 +385,64 @@
             .getPublicUrl(filePath);
 
           logo_url = publicUrl;
-          console.log('URL de logo guardada en storage:', logo_url);
         }
-
-        // Formatear horas para Postgres (HH:MM:SS)
-        const formatTime = t => (t && t.length === 5) ? t + ':00' : (t || null);
-        const horaAperturaDb = formatTime(horaApertura);
-        const horaCierreDb = formatTime(horaCierre);
 
         const payload = {
-            nombre,
-            slogan,
-            whatsapp,
-            moneda,
-            costo_delivery,
-            color_primary,
-            color_accent,
-            logo_url,
-            dias_laborales,
-            hora_apertura: horaAperturaDb,
-            hora_cierre: horaCierreDb,
-            abierto_manual: abiertoManual
+            nombre: document.getElementById('businessName').value,
+            whatsapp: document.getElementById('businessWhatsapp').value,
+            telefono: document.getElementById('businessPhone').value,
+            direccion: document.getElementById('businessAddress').value,
+            moneda: document.getElementById('businessCurrency').value,
+            modulo_delivery_activo: document.getElementById('deliveryActive').checked,
+            delivery_costo_base: parseFloat(document.getElementById('deliveryBaseCost').value) || 0,
+            delivery_radio_km: parseFloat(document.getElementById('deliveryRadius').value) || 5,
+            color_marca: document.getElementById('brandColor').value,
+            logo_url: logo_url
         };
 
-        console.log('Enviando a Supabase (payload exacto):', JSON.stringify(payload, null, 2));
-
-        // Actualizar tenant y pedir el registro actualizado de vuelta
-        const { data: updateData, error } = await window.supabaseClient
+        const { data, error } = await window.supabaseClient
           .from('tenants')
           .update(payload)
-          .eq('id', tenantId)
-          .select();
+          .eq('id', session_data.tenant.id)
+          .select()
+          .single();
 
-        console.log('=== RESULTADO UPDATE ===');
-        console.log('Data retornada:', updateData);
-        console.log('Error retornado:', error);
+        if (error) throw error;
 
-        if (error) {
-          console.error('Error detallado de Supabase:', {
-            message: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-          });
-          throw new Error(`Supabase error: ${error.message} (code: ${error.code})`);
-        }
+        // Update local memory info
+        session_data.tenant = data;
+        document.getElementById('tenantNameDisplay').textContent = data.nombre;
 
-        if (!updateData || updateData.length === 0) {
-          console.error('Update retornó data vacía - posible problema RLS o el registro no existe');
-          throw new Error('No se pudo actualizar el registro. Verifica permisos RLS.');
-        }
-
-        console.log('Update exitoso. Datos retornados:', updateData[0]);
-        console.log('Hora apertura guardada:', updateData[0].hora_apertura);
-        console.log('Hora cierre guardada:', updateData[0].hora_cierre);
-
-        // Actualizar tenant actual
-        currentTenant = { ...currentTenant, ...payload };
-
-        showToast('Cambios guardados exitosamente');
-      } catch (error) {
-        console.error('Error completo:', error);
-        console.error('Stack trace:', error.stack);
-        showToast('Error al guardar: ' + (error.message || 'Error desconocido'), 'error');
+        showToast('Configuración actualizada', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast(err.message, 'error');
       } finally {
         document.getElementById('saveBtn').disabled = false;
-        document.getElementById('saveBtnText').textContent = 'Guardar Cambios';
+        btnText.textContent = 'Guardar Configuración';
       }
     });
 
-    // Toast
     function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
+      const toastBox = document.getElementById('toastBox');
       const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
 
       toastMessage.textContent = message;
-      toast.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-[300] flex items-center gap-2 ${
-        type === 'success' ? 'bg-[#22c55e] text-white' : 'bg-[#ef4444] text-white'
-      }`;
-
-      toast.classList.remove('translate-y-20', 'opacity-0');
-
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3000);
+      toastBox.className = 'toast show';
+      if (type === 'error') {
+         toastBox.classList.add('toast-error');
+         toastIcon.setAttribute('data-lucide', 'alert-circle');
+      } else {
+         toastBox.classList.add('toast-success');
+         toastIcon.setAttribute('data-lucide', 'check-circle');
+      }
+      lucide.createIcons();
+      setTimeout(() => toastBox.classList.remove('show'), 3000);
     }
 
-    // Logout
     document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
 
-    // Función para mostrar mensaje de función Pro
-    function showProFeatureMessage(event) {
-      event.preventDefault();
-      alert('🔒 Esta función está disponible en el Plan Pro.\n\nContacta a Fast Orden para actualizar tu plan.');
-    }
-
-    // Renderizar menú según el plan
-    function renderSidebarMenu() {
-      if (!currentTenant) return;
-
-      const isPro = currentTenant.plan === 'pro';
-      const tenantSlug = currentTenant.slug;
-
-      // Mostrar divider y label
-      document.getElementById('proModulesDivider').classList.remove('hidden');
-      document.getElementById('proModulesLabel').classList.remove('hidden');
-
-      if (isPro) {
-        // Mostrar links activos para plan Pro
-        document.getElementById('cajaLink').classList.remove('hidden');
-        document.getElementById('cajaLink').href = `/caja.html?tenant=${tenantSlug}`;
-
-        document.getElementById('cocinaLink').classList.remove('hidden');
-        document.getElementById('cocinaLink').href = `/cocina.html?tenant=${tenantSlug}`;
-
-        document.getElementById('turnosLink').classList.remove('hidden');
-        document.getElementById('turnosLink').href = `/turnos.html?tenant=${tenantSlug}`;
-
-        
-        document.getElementById('pedidosLink').classList.remove('hidden');
-        document.getElementById('pedidosLink').href = 'pedidos.html';
-
-        if (document.getElementById('repartidoresLink')) {
-            document.getElementById('repartidoresLink').classList.remove('hidden');
-            document.getElementById('repartidoresLink').href = 'repartidores.html';
-        }
-
-
-        document.getElementById('notasLink').classList.remove('hidden');
-        document.getElementById('notasLink').href = 'notas.html';
-
-        document.getElementById('dashboardProLink').classList.remove('hidden');
-        document.getElementById('dashboardProLink').href = 'dashboard.html';
-      } else {
-        // Mostrar items bloqueados para plan Lite
-        document.getElementById('cajaLinkLite').classList.remove('hidden');
-        document.getElementById('cocinaLinkLite').classList.remove('hidden');
-        document.getElementById('turnosLinkLite').classList.remove('hidden');
-        
-        document.getElementById('pedidosLinkLite').classList.remove('hidden');
-        if (document.getElementById('repartidoresLinkLite')) {
-            document.getElementById('repartidoresLinkLite').classList.remove('hidden');
-        }
-
-        document.getElementById('notasLinkLite').classList.remove('hidden');
-        document.getElementById('dashboardProLinkLite').classList.remove('hidden');
-      }
-    }
-
-    // Iniciar
     init();
   </script>
 </body>

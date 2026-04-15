@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klindo | Directorio de Clientes</title>
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="droplets"></i>
+        </div>
+        <div class="sidebar-logo-text">
+          Klin<span>do</span>
+        </div>
+      </div>
+      
+      <div class="sidebar-tenant" id="tenantNameDisplay">
+        ...
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Gestión</div>
+        <a href="index.html" class="sidebar-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="ordenes.html" class="sidebar-link">
+          <i data-lucide="file-text"></i>
+          <span>Historial Órdenes</span>
+        </a>
+        <a href="servicios.html" class="sidebar-link">
+          <i data-lucide="list"></i>
+          <span>Servicios y Precios</span>
+        </a>
+        <a href="clientes.html" class="sidebar-link active">
+          <i data-lucide="users"></i>
+          <span>Directorio Clientes</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:12px;">Negocio</div>
+        <a href="configuracion.html" class="sidebar-link">
+          <i data-lucide="settings"></i>
+          <span>Configuración</span>
+        </a>
+        <a href="repartidores.html" class="sidebar-link" id="navRepartidores" style="display:none;">
+          <i data-lucide="bike"></i>
+          <span>Delivery</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:12px;">Operación App</div>
+        <a href="../recepcion.html" class="sidebar-link">
+          <i data-lucide="shopping-bag"></i>
+          <span>Terminal Recepción</span>
+        </a>
+        <a href="../planta.html" class="sidebar-link">
+          <i data-lucide="factory"></i>
+          <span>Monitor de Planta</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom: 12px;">
+          <div class="avatar">
+            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div id="userName" style="font-weight:700; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cargando...</div>
+            <div id="userRole" style="font-size:0.75rem; color:var(--brand-500); font-weight:600; text-transform:capitalize;">Admin</div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn btn-ghost btn-block" style="justify-content: flex-start;">
+          <i data-lucide="log-out"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-title">Directorio de Clientes</div>
+        <div class="topbar-actions">
+           <!-- No button needed, clients are inferred from orders dynamically right now -->
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="page-content" style="max-width: 1100px;">
+        <div class="page-header">
+           <div>
+             <h1 class="page-title">Clientes Frecuentes</h1>
+             <p class="page-subtitle">Lista generada automáticamente a partir del historial de órdenes.</p>
+           </div>
+        </div>
+
+        <div class="card">
+           <div class="card-header" style="display:flex; gap:12px; align-items:center; padding-bottom:0; border-bottom: none;">
+              <div class="form-group" style="flex:1; margin-bottom:0;">
+                 <input type="text" id="searchClients" class="form-control" placeholder="Buscar por nombre o teléfono...">
+              </div>
+           </div>
+           
+           <div class="table-wrapper" style="margin-top: 16px;">
+             <table>
+               <thead>
+                 <tr>
+                   <th>Cliente</th>
+                   <th>Teléfono</th>
+                   <th>Dirección Frecuente</th>
+                   <th>Total Órdenes</th>
+                   <th>Total Gastado</th>
+                   <th>Última Visita</th>
+                 </tr>
+               </thead>
+               <tbody id="clientsTable">
+                 <tr>
+                   <td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">
+                     <div class="spinner"></div> Calculando directorio...
+                   </td>
+                 </tr>
+               </tbody>
+             </table>
+           </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    let session_data = null;
+    let clientsData = [];
+
+    async function init() {
+      session_data = await window.auth.protectAdminRoute();
+      if (!session_data) return;
+
+      document.getElementById('userName').textContent = session_data.profile.nombre;
+      document.getElementById('userRole').textContent = session_data.profile.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenant.nombre;
+      
+      if (session_data.tenant.plan === 'pro') {
+         document.getElementById('navRepartidores').style.display = 'flex';
+      }
+
+      await loadClients();
+    }
+
+    async function loadClients() {
+      // Obtenemos todas las órdenes para agregar clientes. Para MVP está bien.
+      const { data, error } = await window.supabaseClient
+        .from('ordenes_servicio')
+        .select('cliente_nombre, cliente_telefono, cliente_direccion, total, created_at')
+        .eq('tenant_id', session_data.tenant.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+         console.error('Error fetching orders:', error);
+         document.getElementById('clientsTable').innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--danger)">Error al cargar clientes</td></tr>`;
+         return;
+      }
+
+      // Agrupar
+      const map = {};
+      (data || []).forEach(o => {
+         const key = (o.cliente_nombre || 'N/A').toLowerCase().trim() + '-' + (o.cliente_telefono || '').trim();
+         if (!map[key]) {
+            map[key] = {
+               nombre: o.cliente_nombre || 'Desconocido',
+               telefono: o.cliente_telefono || 'Sin especificar',
+               direccion: o.cliente_direccion || 'No ingresada',
+               total_orders: 0,
+               total_spent: 0,
+               last_visit: o.created_at
+            };
+         }
+         map[key].total_orders += 1;
+         map[key].total_spent += Number(o.total || 0);
+         // update last visit is skipped since we ordered desc (first seen is the newest)
+      });
+
+      clientsData = Object.values(map);
+      renderClients();
+    }
+
+    function renderClients(filter = '') {
+      const tbody = document.getElementById('clientsTable');
+      
+      let filtered = clientsData;
+      if (filter) {
+         const search = filter.toLowerCase();
+         filtered = filtered.filter(c => c.nombre.toLowerCase().includes(search) || c.telefono.includes(search));
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted);">
+              <div>
+                <i data-lucide="users" style="width:48px; height:48px; margin:0 auto 12px; opacity:0.5;"></i>
+                <h3 style="font-weight:600; color:var(--text-secondary); margin-bottom:4px;">No hay clientes</h3>
+                <p style="font-size:0.85rem;">Tu base de datos está vacía o el filtro no encontró resultados.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => {
+         const dateObj = new Date(c.last_visit);
+         return `
+        <tr>
+          <td>
+             <div style="font-weight:700; color:var(--text-primary); text-transform:capitalize;">${c.nombre}</div>
+          </td>
+          <td>
+             <div style="font-weight:600;">${c.telefono}</div>
+          </td>
+          <td>
+             <span style="font-size:0.85rem; color:var(--text-secondary); max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:inline-block;" title="${c.direccion}">${c.direccion}</span>
+          </td>
+          <td>
+             <span class="badge" style="background:var(--brand-50); color:var(--brand-700);">${c.total_orders} Órdenes</span>
+          </td>
+          <td>
+             <div style="font-weight:700;">RD$ ${c.total_spent.toLocaleString('es-DO', {minimumFractionDigits: 2})}</div>
+          </td>
+          <td>
+             <div style="font-size:0.85rem;">${dateObj.toLocaleDateString('es-DO')}</div>
+          </td>
+        </tr>
+      `}).join('');
+
+      lucide.createIcons();
+    }
+
+    // Filtros
+    document.getElementById('searchClients').addEventListener('input', (e) => {
+       renderClients(e.target.value);
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
+
+    init();
+  </script>
+</body>
+</html>

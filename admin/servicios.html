@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klindo | Catálogo de Servicios</title>
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="droplets"></i>
+        </div>
+        <div class="sidebar-logo-text">
+          Klin<span>do</span>
+        </div>
+      </div>
+      
+      <div class="sidebar-tenant" id="tenantNameDisplay">
+        ...
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Gestión</div>
+        <a href="index.html" class="sidebar-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="ordenes.html" class="sidebar-link">
+          <i data-lucide="file-text"></i>
+          <span>Historial Órdenes</span>
+        </a>
+        <a href="servicios.html" class="sidebar-link active">
+          <i data-lucide="list"></i>
+          <span>Servicios y Precios</span>
+        </a>
+        <a href="clientes.html" class="sidebar-link">
+          <i data-lucide="users"></i>
+          <span>Directorio Clientes</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:12px;">Negocio</div>
+        <a href="configuracion.html" class="sidebar-link">
+          <i data-lucide="settings"></i>
+          <span>Configuración</span>
+        </a>
+        <a href="repartidores.html" class="sidebar-link" id="navRepartidores" style="display:none;">
+          <i data-lucide="bike"></i>
+          <span>Delivery</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:12px;">Operación App</div>
+        <a href="../recepcion.html" class="sidebar-link">
+          <i data-lucide="shopping-bag"></i>
+          <span>Terminal Recepción</span>
+        </a>
+        <a href="../planta.html" class="sidebar-link">
+          <i data-lucide="factory"></i>
+          <span>Monitor de Planta</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom: 12px;">
+          <div class="avatar">
+            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div id="userName" style="font-weight:700; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cargando...</div>
+            <div id="userRole" style="font-size:0.75rem; color:var(--brand-500); font-weight:600; text-transform:capitalize;">Admin</div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn btn-ghost btn-block" style="justify-content: flex-start;">
+          <i data-lucide="log-out"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-title">Servicios y Catálogo</div>
+        <div class="topbar-actions">
+           <button class="btn btn-secondary btn-sm" onclick="openCategoryModal()">
+            <i data-lucide="folder-plus"></i> Categoría
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openServiceModal()">
+            <i data-lucide="plus"></i> Nuevo Servicio
+          </button>
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="page-content" style="max-width: 1000px;">
+        <div class="page-header">
+           <div>
+             <h1 class="page-title">Catálogo de Servicios</h1>
+             <p class="page-subtitle">Configura los precios por unidad de prendas de ropa, tintorería, planchado, etc.</p>
+           </div>
+        </div>
+
+        <!-- Categorias Filter -->
+        <div class="filter-chips" id="categoriesFilter">
+           <button class="chip active" data-id="all">Todos los rubros</button>
+           <!-- Se cargan en DB -->
+        </div>
+
+        <!-- Tabla -->
+        <div class="card overflow-hidden">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Servicio / Prenda</th>
+                  <th>Categoría</th>
+                  <th>Cobro por</th>
+                  <th>Precio</th>
+                  <th>Estado</th>
+                  <th style="text-align:right;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="servicesTable">
+                <tr>
+                  <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                       <div class="spinner" style="margin-bottom:12px;"></div>
+                       Cargando catálogo...
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal Servicio -->
+    <div id="serviceModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title" id="serviceModalTitle">Crear Servicio</h2>
+          <button type="button" class="modal-close" onclick="closeServiceModal()">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <form id="serviceForm">
+          <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+            <input type="hidden" id="serviceId">
+            
+            <div class="form-group">
+              <label class="form-label">Nombre del Servicio/Prenda *</label>
+              <input type="text" id="serviceName" class="form-control" placeholder="Ej: Camisa (Lavado + Planchado)" required>
+            </div>
+            
+            <div class="form-grid">
+               <div class="form-group">
+                  <label class="form-label">Categoría *</label>
+                  <select id="serviceCategory" class="form-control" required>
+                     <!-- Carga dinámica -->
+                  </select>
+               </div>
+               <div class="form-group">
+                  <label class="form-label">Tipo de Cobro *</label>
+                  <select id="serviceType" class="form-control">
+                    <option value="unidad">Por Unidad (Ej: 1 Pantalón)</option>
+                    <option value="kilo">Por Kilo (Ej: 3Kg de Ropa General)</option>
+                    <option value="metro">Por Metro (Ej: Alfombras)</option>
+                    <option value="fijo">Precio Fijo (Ej: Combo Edredón)</option>
+                  </select>
+               </div>
+            </div>
+
+            <div class="form-grid">
+               <div class="form-group">
+                  <label class="form-label">Precio (RD$) *</label>
+                  <input type="number" id="servicePrice" class="form-control" step="0.01" min="0" required>
+               </div>
+               <div class="form-group">
+                  <label class="form-label">Tiempo Estimado (Hrs)</label>
+                  <input type="number" id="serviceHours" class="form-control" value="24" min="1">
+               </div>
+            </div>
+
+            <div class="form-group" style="flex-direction:row; align-items:center; gap:8px; margin-top:8px;">
+              <input type="checkbox" id="serviceActive" checked style="width: 18px; height: 18px; accent-color: var(--brand-500);">
+              <label for="serviceActive" style="font-weight:600; font-size:0.9rem;">Habilitado para la recepción</label>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="saveServiceBtn">Guardar Servicio</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Modal Categoría -->
+    <div id="categoryModal" class="modal-overlay">
+      <div class="modal" style="max-width:400px;">
+        <div class="modal-header">
+          <h2 class="modal-title">Nueva Categoría</h2>
+          <button type="button" class="modal-close" onclick="closeCategoryModal()">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <form id="categoryForm">
+          <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+            <div class="form-group">
+              <label class="form-label">Nombre *</label>
+              <input type="text" id="catName" class="form-control" placeholder="Ej: Tintorería, Planchado" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="saveCatBtn">Crear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast-container">
+    <div class="toast toast-success" id="toastBox">
+      <i data-lucide="check-circle" id="toastIcon"></i>
+      <span id="toastMessage">Operación exitosa</span>
+    </div>
+  </div>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    let session_data = null;
+    let categories = [];
+    let services = [];
+    let activeFilter = 'all';
+
+    async function init() {
+      session_data = await window.auth.protectAdminRoute();
+      if (!session_data) return;
+
+      document.getElementById('userName').textContent = session_data.profile.nombre;
+      document.getElementById('userRole').textContent = session_data.profile.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenant.nombre;
+      
+      // Mostrar repartidores si el plan lo permite
+      if (session_data.tenant.plan === 'pro') {
+         document.getElementById('navRepartidores').style.display = 'flex';
+      }
+
+      await loadCategories();
+      await loadServices();
+    }
+
+    async function loadCategories() {
+       const { data, error } = await window.supabaseClient
+         .from('categorias_servicio')
+         .select('*')
+         .eq('tenant_id', session_data.tenant.id)
+         .order('orden', { ascending: true });
+         
+       if (!error && data) {
+          categories = data;
+          renderCategoriesFilter();
+          populateCategorySelect();
+       }
+    }
+    
+    async function loadServices() {
+       const { data, error } = await window.supabaseClient
+         .from('servicios')
+         .select(`*, categorias_servicio(nombre)`)
+         .eq('tenant_id', session_data.tenant.id)
+         .order('nombre', { ascending: true });
+         
+       if (!error && data) {
+          services = data;
+          renderServices();
+       }
+    }
+
+    function renderCategoriesFilter() {
+      const container = document.getElementById('categoriesFilter');
+      let html = `<button class="chip ${activeFilter === 'all' ? 'active' : ''}" onclick="applyFilter('all')">Todos</button>`;
+      
+      categories.forEach(cat => {
+         html += `<button class="chip ${activeFilter === cat.id ? 'active' : ''}" onclick="applyFilter('${cat.id}')">${cat.nombre}</button>`;
+      });
+      container.innerHTML = html;
+    }
+    
+    function populateCategorySelect() {
+      const select = document.getElementById('serviceCategory');
+      select.innerHTML = '<option value="">Seleccione una categoría</option>';
+      categories.forEach(cat => {
+         select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+      });
+    }
+
+    window.applyFilter = function(catId) {
+       activeFilter = catId;
+       renderCategoriesFilter();
+       renderServices();
+    }
+
+    function renderServices() {
+      const tbody = document.getElementById('servicesTable');
+      
+      let filtered = services;
+      if (activeFilter !== 'all') {
+         filtered = services.filter(s => s.categoria_id === activeFilter);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty-state">
+              <div class="empty-state-icon">
+                <i data-lucide="package-search"></i>
+              </div>
+              <h3 class="empty-state-title">No hay servicios en este rubro</h3>
+              <p>Puedes crear uno nuevo con el botón superior derecho.</p>
+            </td>
+          </tr>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(s => `
+        <tr>
+          <td>
+            <div style="font-weight:700; color:var(--text-primary); margin-bottom:2px;">${s.nombre}</div>
+            ${s.tiempo_estimado_horas ? `<div style="font-size:0.75rem; color:var(--text-secondary);"><i data-lucide="clock" style="display:inline; width:10px; vertical-align:text-bottom;"></i> ${s.tiempo_estimado_horas} hrs aprox</div>` : ''}
+          </td>
+          <td>
+            <span class="badge" style="background:var(--brand-50); color:var(--brand-700); border:1px solid var(--brand-200); text-transform:none;">
+              ${s.categorias_servicio?.nombre || 'General'}
+            </span>
+          </td>
+          <td>
+            <span style="font-size:0.85rem; color:var(--text-secondary); text-transform:capitalize;">${s.tipo_cobro}</span>
+          </td>
+          <td>
+            <span style="font-weight:700; color:var(--text-primary);">RD$ ${parseFloat(s.precio_base).toLocaleString('es-DO', {minimumFractionDigits: 2})}</span>
+          </td>
+          <td>
+            <span class="badge" style="${s.activo ? 'background:var(--success-bg); color:var(--success); border:1px solid var(--success-border);' : 'background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger-border);'}">${s.activo ? 'Activo' : 'Inactivo'}</span>
+          </td>
+          <td style="text-align:right;">
+            <div style="display:flex; justify-content:flex-end; gap:6px;">
+              <button onclick="editService('${s.id}')" class="btn btn-secondary btn-sm" title="Editar">
+                <i data-lucide="pencil" style="width:14px; height:14px;"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // Modal Service Logic
+    window.openServiceModal = function() {
+       document.getElementById('serviceForm').reset();
+       document.getElementById('serviceId').value = '';
+       document.getElementById('serviceModalTitle').textContent = 'Crear Servicio';
+       document.getElementById('serviceModal').classList.add('open');
+       
+       if (categories.length === 0) {
+          showToast('Primero debes crear una categoría de servicio', 'warning');
+       }
+    }
+    
+    window.closeServiceModal = function() {
+       document.getElementById('serviceModal').classList.remove('open');
+    }
+    
+    window.editService = function(id) {
+       const service = services.find(s => s.id === id);
+       if (!service) return;
+       
+       document.getElementById('serviceId').value = service.id;
+       document.getElementById('serviceModalTitle').textContent = 'Editar Servicio';
+       
+       document.getElementById('serviceName').value = service.nombre;
+       document.getElementById('serviceCategory').value = service.categoria_id;
+       document.getElementById('serviceType').value = service.tipo_cobro;
+       document.getElementById('servicePrice').value = service.precio_base;
+       document.getElementById('serviceHours').value = service.tiempo_estimado_horas || 24;
+       document.getElementById('serviceActive').checked = service.activo;
+       
+       document.getElementById('serviceModal').classList.add('open');
+    }
+
+    document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+       e.preventDefault();
+       const btn = document.getElementById('saveServiceBtn');
+       btn.disabled = true;
+       btn.textContent = 'Guardando...';
+       
+       try {
+          const id = document.getElementById('serviceId').value;
+          const payload = {
+             tenant_id: session_data.tenant.id,
+             nombre: document.getElementById('serviceName').value,
+             categoria_id: document.getElementById('serviceCategory').value,
+             tipo_cobro: document.getElementById('serviceType').value,
+             precio_base: document.getElementById('servicePrice').value,
+             tiempo_estimado_horas: document.getElementById('serviceHours').value || 24,
+             activo: document.getElementById('serviceActive').checked
+          };
+          
+          if (id) {
+             const { error } = await window.supabaseClient.from('servicios').update(payload).eq('id', id);
+             if (error) throw error;
+             showToast('Servicio actualizado');
+          } else {
+             const { error } = await window.supabaseClient.from('servicios').insert([payload]);
+             if (error) throw error;
+             showToast('Servicio creado');
+          }
+          
+          closeServiceModal();
+          await loadServices();
+       } catch (err) {
+          console.error(err);
+          showToast(err.message || 'Ocurrió un error', 'error');
+       } finally {
+          btn.disabled = false;
+          btn.textContent = 'Guardar Servicio';
+       }
+    });
+    
+    // Modal Category Logic
+    window.openCategoryModal = function() {
+       document.getElementById('categoryForm').reset();
+       document.getElementById('categoryModal').classList.add('open');
+    }
+    
+    window.closeCategoryModal = function() {
+       document.getElementById('categoryModal').classList.remove('open');
+    }
+    
+    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+       e.preventDefault();
+       const btn = document.getElementById('saveCatBtn');
+       btn.disabled = true;
+       btn.textContent = 'Guardando...';
+       
+       try {
+          const nombre = document.getElementById('catName').value;
+          const payload = {
+             tenant_id: session_data.tenant.id,
+             nombre: nombre,
+             tipo: 'servicio',
+             orden: categories.length + 1
+          };
+          
+          const { error } = await window.supabaseClient.from('categorias_servicio').insert([payload]);
+          if (error) throw error;
+          
+          showToast('Categoría creada');
+          closeCategoryModal();
+          await loadCategories();
+       } catch (err) {
+          console.error(err);
+          showToast(err.message || 'Ocurrió un error', 'error');
+       } finally {
+          btn.disabled = false;
+          btn.textContent = 'Crear';
+       }
+    });
+
+    // Toast
+    function showToast(message, type = 'success') {
+      const toastBox = document.getElementById('toastBox');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMessage.textContent = message;
+      toastBox.className = 'toast show';
+      
+      if (type === 'error'){
+        toastBox.classList.add('toast-error');
+        toastIcon.setAttribute('data-lucide', 'alert-circle');
+      } else if (type === 'warning'){
+        toastBox.classList.add('toast-warning');
+        toastIcon.setAttribute('data-lucide', 'alert-triangle');
+      } else {
+        toastBox.classList.add('toast-success');
+        toastIcon.setAttribute('data-lucide', 'check-circle');
+      }
+      
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toastBox.classList.remove('show');
+      }, 3000);
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
+
+    init();
+  </script>
+</body>
+</html>
