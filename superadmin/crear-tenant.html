@@ -288,7 +288,7 @@
     // Usar window.supabaseClient directamente
     lucide.createIcons();
 
-    const EDGE_FUNCTION_URL = 'https://yetdmvlisxavxdwdxyyb.supabase.co/functions/v1/create-admin-user';
+    const EDGE_FUNCTION_URL = 'https://vyfbmqgizgaigxejgrgs.supabase.co/functions/v1/create-admin-user';
 
     let profile = null;
 
@@ -420,12 +420,9 @@
         const tenantData = {
           slug: document.getElementById('businessSlug').value,
           nombre: document.getElementById('businessName').value,
-          slogan: document.getElementById('businessSlogan').value,
           whatsapp: document.getElementById('businessWhatsapp').value,
           moneda: document.getElementById('businessCurrency').value,
-          costo_delivery: parseFloat(document.getElementById('businessDelivery').value) || 50,
           plan: document.getElementById('tenantPlan').value,
-          ciclo: ciclo,
           plan_expira_at: expiryDate.toISOString(),
           activo: true
         };
@@ -472,7 +469,7 @@
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
-            'apikey': 'sb_publishable_ysSwpu3wAKcKR4OQzynpTg_Dvk8NznP'
+            'apikey': 'sb_publishable_IYL-X9TiZFRKHky9N_6qwQ_KJnOxWSc'
           },
           body: JSON.stringify(adminData)
         });
