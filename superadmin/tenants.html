@@ -275,6 +275,12 @@
                 <button onclick="openEditModal('${t.id}')" class="btn btn-secondary btn-sm" title="Editar">
                   <i data-lucide="pencil" style="width:14px; height:14px;"></i>
                 </button>
+                <button onclick="toggleTenant('${t.id}', ${t.activo})" class="btn btn-secondary btn-sm" title="${t.activo ? 'Suspender' : 'Activar'}" style="${t.activo ? 'color:var(--danger);' : 'color:var(--success);'}">
+                  <i data-lucide="${t.activo ? 'toggle-left' : 'toggle-right'}" style="width:14px; height:14px;"></i>
+                </button>
+                <button onclick="deleteTenant('${t.id}')" class="btn btn-secondary btn-sm" title="Eliminar" style="color:var(--danger);">
+                  <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -371,6 +377,50 @@
         toastBox.classList.remove('show');
       }, 3000);
     }
+
+    // Toggle tenant status (activate/deactivate)
+    window.toggleTenant = async function(tenantId, currentStatus) {
+      const newStatus = !currentStatus;
+      const action = newStatus ? 'activar' : 'suspender';
+
+      const { error } = await window.supabaseClient
+        .from('tenants')
+        .update({ activo: newStatus })
+        .eq('id', tenantId);
+
+      if (error) {
+        console.error('Error al cambiar estado:', error);
+        showToast(`Error al ${action} el negocio`, 'error');
+        return;
+      }
+
+      showToast(`Negocio ${newStatus ? 'activado' : 'suspendido'} exitosamente`);
+      await loadTenants();
+    };
+
+    // Delete tenant
+    window.deleteTenant = async function(tenantId) {
+      const tenant = allTenants.find(t => t.id === tenantId);
+      const tenantName = tenant ? tenant.nombre : 'este negocio';
+
+      const confirmed = window.confirm(`¿Estás seguro de que deseas eliminar "${tenantName}"? Esta acción no se puede deshacer.`);
+
+      if (!confirmed) return;
+
+      const { error } = await window.supabaseClient
+        .from('tenants')
+        .delete()
+        .eq('id', tenantId);
+
+      if (error) {
+        console.error('Error al eliminar:', error);
+        showToast('Error al eliminar el negocio', 'error');
+        return;
+      }
+
+      showToast('Negocio eliminado exitosamente');
+      await loadTenants();
+    };
 
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
