@@ -76,38 +76,80 @@ serve(async (req) => {
       }
     }
 
-    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true
-    })
+    // Verificar si el usuario ya existe
+    const { data: { users: existingUsers } } = await supabaseAdmin.auth.admin.listUsers()
+    const existingUser = existingUsers?.find(u => u.email === email)
 
-    if (createError) {
-      return new Response(
-        JSON.stringify({ error: createError.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    let userId: string
 
-    // Crear el profile
-    const { error: profileInsertError } = await supabaseAdmin
-      .from('profiles')
-      .insert({
-        id: newUser.user.id,
-        tenant_id,
-        nombre,
-        rol: userRole
+    if (existingUser) {
+      // Usuario ya existe — usar el id existente
+      userId = existingUser.id
+    } else {
+      // Crear nuevo usuario
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true
       })
 
-    if (profileInsertError) {
-      return new Response(
-        JSON.stringify({ error: profileInsertError.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      if (createError) {
+        return new Response(
+          JSON.stringify({ error: createError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      userId = newUser.user.id
+    }
+
+    // Verificar si ya tiene profile
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle()
+
+    if (!existingProfile) {
+      // Crear el profile sin email
+      const { error: profileInsertError } = await supabaseAdmin
+        .from('profiles')
+        .insert({
+          id: userId,
+          tenant_id,
+          nombre,
+          rol: userRole,
+          activo: true
+        })
+
+      if (profileInsertError) {
+        return new Response(
+          JSON.stringify({ error: profileInsertError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } else {
+      // Actualizar profile existente con nuevo tenant
+      const { error: profileUpdateError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          tenant_id,
+          nombre,
+          rol: userRole,
+          activo: true
+        })
+        .eq('id', userId)
+
+      if (profileUpdateError) {
+        return new Response(
+          JSON.stringify({ error: profileUpdateError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
     return new Response(
-      JSON.stringify({ success: true, user_id: newUser.user.id }),
+      JSON.stringify({ success: true, user_id: userId }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
