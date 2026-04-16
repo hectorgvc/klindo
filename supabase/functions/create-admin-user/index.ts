@@ -96,7 +96,6 @@ serve(async (req) => {
         id: newUser.user.id,
         tenant_id,
         nombre,
-        email,
         rol: userRole
       })
 
