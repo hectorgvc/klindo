@@ -178,11 +178,11 @@
       session_data = await window.auth.protectAdminRoute();
       if (!session_data) return;
 
-      document.getElementById('userName').textContent = session_data.profile.nombre;
-      document.getElementById('userRole').textContent = session_data.profile.rol;
-      document.getElementById('tenantNameDisplay').textContent = session_data.tenant.nombre;
-      
-      if (session_data.tenant.plan === 'pro') {
+      document.getElementById('userName').textContent = session_data.nombre;
+      document.getElementById('userRole').textContent = session_data.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenants.nombre;
+
+      if (session_data.tenants.plan === 'pro') {
          document.getElementById('navRepartidores').style.display = 'flex';
       }
 
@@ -194,7 +194,7 @@
         const { data: reps, error: err1 } = await window.supabaseClient
           .from('profiles')
           .select('*')
-          .eq('tenant_id', session_data.tenant.id)
+          .eq('tenant_id', session_data.tenant_id)
           .eq('rol', 'repartidor')
           .order('created_at', { ascending: false });
 
@@ -315,7 +315,7 @@
            nombre: document.getElementById('repName').value,
            email: document.getElementById('repEmail').value,
            password: document.getElementById('repPassword').value,
-           tenant_id: session_data.tenant.id,
+           tenant_id: session_data.tenant_id,
            rol: 'repartidor'
          };
 

@@ -244,14 +244,14 @@
       session_data = await window.auth.protectAdminRoute();
       if (!session_data) return;
 
-      document.getElementById('userName').textContent = session_data.profile.nombre;
-      document.getElementById('userRole').textContent = session_data.profile.rol;
-      document.getElementById('tenantNameDisplay').textContent = session_data.tenant.nombre;
-      
+      document.getElementById('userName').textContent = session_data.nombre;
+      document.getElementById('userRole').textContent = session_data.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenants.nombre;
+
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       document.getElementById('dateSubtitle').textContent = new Date().toLocaleDateString('es-DO', options);
 
-      if (session_data.tenant.plan === 'pro') {
+      if (session_data.tenants.plan === 'pro') {
          document.getElementById('navRepartidores').style.display = 'flex';
       }
 
@@ -264,7 +264,7 @@
 
     function renderPlanInfo() {
       const planBadge = document.getElementById('planBadge');
-      if (session_data.tenant.plan === 'pro') {
+      if (session_data.tenants.plan === 'pro') {
          planBadge.textContent = 'PRO';
          planBadge.style.background = 'var(--warning-bg)';
          planBadge.style.color = 'var(--warning)';
@@ -272,8 +272,8 @@
          planBadge.textContent = 'LITE';
       }
 
-      if (session_data.tenant.plan_expira_at) {
-         const date = new Date(session_data.tenant.plan_expira_at);
+      if (session_data.tenants.plan_expira_at) {
+         const date = new Date(session_data.tenants.plan_expira_at);
          document.getElementById('planExpiryDate').textContent = date.toLocaleDateString('es-DO');
 
          const hoy = new Date();
@@ -298,7 +298,7 @@
       const { data: ordenesHoy } = await window.supabaseClient
          .from('ordenes_servicio')
          .select('total, estado')
-         .eq('tenant_id', session_data.tenant.id)
+         .eq('tenant_id', session_data.tenant_id)
          .gte('created_at', hoyISO)
          .lt('created_at', mañanaISO);
 
@@ -319,22 +319,22 @@
       // 2. Órdenes en estados específicos (independiente del día de creación, nos importa el inventario general actual en tienda)
       // Recibidas (sin empezar)
       const { count: countRecibidas } = await window.supabaseClient.from('ordenes_servicio').select('*', { count: 'exact', head: true })
-         .eq('tenant_id', session_data.tenant.id).eq('estado', 'recibido');
+         .eq('tenant_id', session_data.tenant_id).eq('estado', 'recibido');
       
       const { count: countLavado } = await window.supabaseClient.from('ordenes_servicio').select('*', { count: 'exact', head: true })
-         .eq('tenant_id', session_data.tenant.id).eq('estado', 'en_lavado');
+         .eq('tenant_id', session_data.tenant_id).eq('estado', 'en_lavado');
          
       const { count: countSeco } = await window.supabaseClient.from('ordenes_servicio').select('*', { count: 'exact', head: true })
-         .eq('tenant_id', session_data.tenant.id).eq('estado', 'en_seco');
+         .eq('tenant_id', session_data.tenant_id).eq('estado', 'en_seco');
          
       const { count: countPlanchado } = await window.supabaseClient.from('ordenes_servicio').select('*', { count: 'exact', head: true })
-         .eq('tenant_id', session_data.tenant.id).eq('estado', 'en_planchado');
+         .eq('tenant_id', session_data.tenant_id).eq('estado', 'en_planchado');
 
       const { count: countListas } = await window.supabaseClient.from('ordenes_servicio').select('*', { count: 'exact', head: true })
-         .eq('tenant_id', session_data.tenant.id).eq('estado', 'listo');
+         .eq('tenant_id', session_data.tenant_id).eq('estado', 'listo');
          
       const { count: clientesCount } = await window.supabaseClient.from('profiles').select('*', { count: 'exact', head: true })
-         .eq('tenant_id', session_data.tenant.id).eq('rol', 'cliente');
+         .eq('tenant_id', session_data.tenant_id).eq('rol', 'cliente');
 
       document.getElementById('ingresosHoy').textContent = `RD$ ${ingresos.toLocaleString('es-DO', {minimumFractionDigits: 2})}`;
       document.getElementById('ordenesRecibidas').textContent = countRecibidas || 0;

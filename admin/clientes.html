@@ -149,11 +149,11 @@
       session_data = await window.auth.protectAdminRoute();
       if (!session_data) return;
 
-      document.getElementById('userName').textContent = session_data.profile.nombre;
-      document.getElementById('userRole').textContent = session_data.profile.rol;
-      document.getElementById('tenantNameDisplay').textContent = session_data.tenant.nombre;
-      
-      if (session_data.tenant.plan === 'pro') {
+      document.getElementById('userName').textContent = session_data.nombre;
+      document.getElementById('userRole').textContent = session_data.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenants.nombre;
+
+      if (session_data.tenants.plan === 'pro') {
          document.getElementById('navRepartidores').style.display = 'flex';
       }
 
@@ -165,7 +165,7 @@
       const { data, error } = await window.supabaseClient
         .from('ordenes_servicio')
         .select('cliente_nombre, cliente_telefono, cliente_direccion, total, created_at')
-        .eq('tenant_id', session_data.tenant.id)
+        .eq('tenant_id', session_data.tenant_id)
         .order('created_at', { ascending: false });
 
       if (error) {

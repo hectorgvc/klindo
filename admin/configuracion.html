@@ -256,11 +256,11 @@
       session_data = await window.auth.protectAdminRoute();
       if (!session_data) return;
 
-      document.getElementById('userName').textContent = session_data.profile.nombre;
-      document.getElementById('userRole').textContent = session_data.profile.rol;
-      document.getElementById('tenantNameDisplay').textContent = session_data.tenant.nombre;
-      
-      if (session_data.tenant.plan === 'pro') {
+      document.getElementById('userName').textContent = session_data.nombre;
+      document.getElementById('userRole').textContent = session_data.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenants.nombre;
+
+      if (session_data.tenants.plan === 'pro') {
          document.getElementById('navRepartidores').style.display = 'flex';
       }
 
@@ -268,13 +268,13 @@
     }
 
     function loadTenantData() {
-      const t = session_data.tenant;
+      const t = session_data.tenants;
       document.getElementById('businessName').value = t.nombre || '';
       document.getElementById('businessWhatsapp').value = t.whatsapp || '';
       document.getElementById('businessPhone').value = t.telefono || '';
       document.getElementById('businessAddress').value = t.direccion || '';
       document.getElementById('businessCurrency').value = t.moneda || 'RD$';
-      
+
       // Delivery
       const deliveryStatus = typeof t.modulo_delivery_activo === 'boolean' ? t.modulo_delivery_activo : false;
       document.getElementById('deliveryActive').checked = deliveryStatus;
@@ -372,7 +372,7 @@
         if (selectedLogo) {
           const fileExt = selectedLogo.name.split('.').pop();
           const fileName = `logo-${Date.now()}.${fileExt}`;
-          const filePath = `${session_data.tenant.id}/logo/${fileName}`;
+          const filePath = `${session_data.tenant_id}/logo/${fileName}`;
 
           const { error: uploadError } = await window.supabaseClient.storage
             .from('tenant-assets')
@@ -403,14 +403,14 @@
         const { data, error } = await window.supabaseClient
           .from('tenants')
           .update(payload)
-          .eq('id', session_data.tenant.id)
+          .eq('id', session_data.tenant_id)
           .select()
           .single();
 
         if (error) throw error;
 
         // Update local memory info
-        session_data.tenant = data;
+        session_data.tenants = data;
         document.getElementById('tenantNameDisplay').textContent = data.nombre;
 
         showToast('Configuración actualizada', 'success');
