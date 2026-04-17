@@ -245,8 +245,7 @@
              </div>
              <div style="flex:1;">
                 <h3 style="font-weight:700; font-size:1.1rem; color:var(--text-primary); margin-bottom:2px;">${rep.nombre}</h3>
-                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:8px;">${rep.email}</p>
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
                    <span class="badge" style="${rep.activo ? 'background:var(--success-bg); color:var(--success);' : 'background:var(--danger-bg); color:var(--danger);'}">${rep.activo ? 'Activo' : 'Suspendido'}</span>
                    <span class="badge" style="background:var(--bg-tertiary); color:var(--text-secondary);">Hoy: ${rep.entregasHoy} Entregas</span>
                 </div>
@@ -269,7 +268,7 @@
     // Toggle activa
     window.toggleActiva = async function(id, activa) {
       if(!confirm(`¿Seguro que deseas ${activa ? 'activar' : 'suspender'} a este repartidor?`)) return;
-      const { error } = await window.supabaseClient.from('profiles').update({ activo }).eq('id', id);
+      const { error } = await window.supabaseClient.from('profiles').update({ activo: activa }).eq('id', id);
       if (error) {
         showToast('Error al actualizar', 'error');
         return;
