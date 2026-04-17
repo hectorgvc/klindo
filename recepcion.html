@@ -97,10 +97,39 @@
     .section-box-header svg { width: 15px; height: 15px; }
 
     .section-box-body {
-      padding: 12px 14px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+    }
+
+    /* Inputs bien visibles */
+    .section-box-body .form-group {
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-box-body .form-control {
+      background: var(--bg-primary);
+      border: 1.5px solid var(--border);
+      min-height: 42px;
+      font-size: 0.95rem;
+    }
+
+    .section-box-body .form-control:focus {
+      border-color: var(--brand-500);
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+    }
+
+    /* Destacar sección de datos del cliente */
+    .section-box:first-child {
+      border-color: var(--brand-300);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .section-box:first-child .section-box-header {
+      background: linear-gradient(135deg, var(--brand-50), var(--bg-tertiary));
+      color: var(--brand-700);
     }
 
     /* Buscador de prendas/servicios */
@@ -595,28 +624,37 @@
               Entrega y fechas
             </div>
             <div class="section-box-body">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <button class="servicio-btn selected" id="btnRetiro" onclick="setEntrega('retiro')">
                   <div class="servicio-btn-icon" style="background:#e0f2fe;">
                     <i data-lucide="store" style="width:28px; height:28px; color:var(--brand-500);"></i>
                   </div>
-                  <div class="servicio-btn-name">Retiro local</div>
+                  <div class="servicio-btn-name">Retiro en local</div>
                 </button>
                 <button class="servicio-btn" id="btnDelivery" onclick="setEntrega('delivery')">
                   <div class="servicio-btn-icon" style="background:#ede9fe;">
                     <i data-lucide="truck" style="width:28px; height:28px; color:var(--brand-500);"></i>
                   </div>
-                  <div class="servicio-btn-name">Delivery</div>
+                  <div class="servicio-btn-name">Delivery a domicilio</div>
                 </button>
               </div>
 
-              <div id="deliveryFields" style="display:none" class="form-group">
-                <label class="form-label">Dirección de entrega</label>
-                <input id="clienteDireccion" type="text" class="form-control" placeholder="Calle, sector, referencia…" />
+              <div id="deliveryFields" style="display:none;margin-top:12px;padding:14px;background:var(--bg-tertiary);border-radius:var(--radius-md);border:1px solid var(--border);">
+                <div class="form-group">
+                  <label class="form-label">Dirección de entrega *</label>
+                  <input id="clienteDireccion" type="text" class="form-control" placeholder="Calle, sector, número, referencia…" />
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                  <label class="form-label">Costo de delivery</label>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-weight:600;color:var(--text-secondary);">RD$</span>
+                    <input id="costoDelivery" type="number" class="form-control" placeholder="0.00" min="0" step="10" style="flex:1;" onchange="actualizarTotales()" />
+                  </div>
+                </div>
               </div>
 
-              <div class="form-group">
-                <label class="form-label">Fecha prometida</label>
+              <div class="form-group" style="margin-top:8px;">
+                <label class="form-label">Fecha prometida de entrega *</label>
                 <input id="fechaPromesa" type="datetime-local" class="form-control" />
               </div>
             </div>
@@ -1036,7 +1074,16 @@ function renderItemsList() {
 
 function actualizarTotales() {
   const subtotal = itemsOrden.reduce((s, i) => s + i.subtotal, 0);
-  const total    = subtotal + (tipoEntrega === 'delivery' ? costoDelivery : 0);
+
+  // Leer costo de delivery del input si está visible
+  if (tipoEntrega === 'delivery') {
+    const costoInput = document.getElementById('costoDelivery');
+    costoDelivery = parseFloat(costoInput?.value) || 0;
+  } else {
+    costoDelivery = 0;
+  }
+
+  const total    = subtotal + costoDelivery;
   const prendas  = itemsOrden.reduce((s, i) => s + i.cantidad, 0);
 
   document.getElementById('totalPrendas').textContent  = prendas;
@@ -1052,7 +1099,16 @@ function setEntrega(tipo) {
   document.getElementById('btnDelivery').classList.toggle('selected', tipo === 'delivery');
   document.getElementById('deliveryFields').style.display = tipo === 'delivery' ? 'block' : 'none';
   document.getElementById('rowDelivery').style.display   = tipo === 'delivery' ? 'flex' : 'none';
-  costoDelivery = tipo === 'delivery' ? (tenantData?.delivery_costo_base || 200) : 0;
+
+  if (tipo === 'delivery') {
+    const costoInput = document.getElementById('costoDelivery');
+    costoDelivery = parseFloat(costoInput?.value) || tenantData?.delivery_costo_base || 200;
+    if (costoInput && !costoInput.value) {
+      costoInput.value = costoDelivery.toFixed(2);
+    }
+  } else {
+    costoDelivery = 0;
+  }
   actualizarTotales();
 }
 
@@ -1081,6 +1137,8 @@ async function crearOrden() {
 
   if (!nombre) { showToast('Ingresa el nombre del cliente', 'error'); return; }
   if (!itemsOrden.length) { showToast('Agrega al menos un servicio', 'error'); return; }
+  if (tipoEntrega === 'delivery' && !dir) { showToast('Ingresa la dirección de entrega', 'error'); return; }
+  if (tipoEntrega === 'delivery' && !fecha) { showToast('Selecciona la fecha prometida de entrega', 'error'); return; }
 
   const btn = document.getElementById('btnCrearOrden');
   btn.disabled = true;
@@ -1088,7 +1146,7 @@ async function crearOrden() {
 
   try {
     const subtotal     = itemsOrden.reduce((s, i) => s + i.subtotal, 0);
-    const deliCosto    = tipoEntrega === 'delivery' ? costoDelivery : 0;
+    const deliCosto    = tipoEntrega === 'delivery' ? (parseFloat(document.getElementById('costoDelivery')?.value) || 0) : 0;
     const total        = subtotal + deliCosto;
     const hoy          = new Date().toISOString().slice(0, 10);
 
