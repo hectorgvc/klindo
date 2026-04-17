@@ -13,28 +13,28 @@
     /* ── Layout específico recepción ── */
     .recepcion-layout {
       display: grid;
-      grid-template-columns: 1fr 380px;
+      grid-template-columns: 380px 1fr;
       gap: 20px;
       height: calc(100vh - 60px);
     }
 
-    /* Panel izquierdo — lista de órdenes */
+    /* Panel izquierdo — nueva orden (sidebar fijo) */
+    .panel-nueva-orden {
+      border-right: 1px solid var(--border);
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Panel derecho — lista de órdenes (contenido principal) */
     .panel-ordenes {
       overflow-y: auto;
       padding: 20px;
       display: flex;
       flex-direction: column;
       gap: 16px;
-    }
-
-    /* Panel derecho — nueva orden */
-    .panel-nueva-orden {
-      border-left: 1px solid var(--border);
-      background: var(--bg-primary);
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
     }
 
     .panel-nueva-header {
@@ -553,59 +553,7 @@
     <!-- Contenido principal — split layout -->
     <div class="recepcion-layout">
 
-      <!-- ══ Panel izquierdo: órdenes activas ══ -->
-      <div class="panel-ordenes" id="panelOrdenes">
-
-        <!-- Filtros -->
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <h1 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:1.2rem;color:var(--text-primary);">Órdenes del día</h1>
-          <div class="filter-chips" id="filtroEstado" style="margin:0">
-            <button class="chip active" onclick="filtrarEstado('todos', this)">Todas</button>
-            <button class="chip" onclick="filtrarEstado('recibido', this)">Recibidas</button>
-            <button class="chip" onclick="filtrarEstado('en_lavado', this)">En lavado</button>
-            <button class="chip" onclick="filtrarEstado('en_seco', this)">En seco</button>
-            <button class="chip" onclick="filtrarEstado('en_planchado', this)">Planchado</button>
-            <button class="chip" onclick="filtrarEstado('listo', this)">Listas</button>
-            <button class="chip" onclick="filtrarEstado('entregado', this)">Entregadas</button>
-          </div>
-        </div>
-
-        <!-- Vista Kanban -->
-        <div id="vistaKanban" class="kanban-cols">
-          <!-- Se genera dinámicamente -->
-        </div>
-
-        <!-- Vista Lista -->
-        <div id="vistaLista" class="hidden">
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Cliente</th>
-                  <th>Prendas</th>
-                  <th>Estado</th>
-                  <th>Total</th>
-                  <th>Prometida</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tablaOrdenes">
-                <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Cargando órdenes…</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Estado loading -->
-        <div id="loadingOrdenes" class="loading-state" style="display:none">
-          <div class="spinner"></div>
-          <span>Cargando órdenes…</span>
-        </div>
-
-      </div>
-
-      <!-- ══ Panel derecho: nueva orden ══ -->
+      <!-- ══ Panel izquierdo: nueva orden (sidebar) ══ -->
       <div class="panel-nueva-orden">
 
         <div class="panel-nueva-header">
@@ -642,11 +590,15 @@
             <div class="section-box-body">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                 <button class="servicio-btn selected" id="btnRetiro" onclick="setEntrega('retiro')">
-                  <div class="servicio-btn-icon" style="background:#e0f2fe;">🏪</div>
+                  <div class="servicio-btn-icon" style="background:#e0f2fe;">
+                    <i data-lucide="store" style="width:28px; height:28px; color:var(--brand-500);"></i>
+                  </div>
                   <div class="servicio-btn-name">Retiro local</div>
                 </button>
                 <button class="servicio-btn" id="btnDelivery" onclick="setEntrega('delivery')">
-                  <div class="servicio-btn-icon" style="background:#ede9fe;">🚚</div>
+                  <div class="servicio-btn-icon" style="background:#ede9fe;">
+                    <i data-lucide="truck" style="width:28px; height:28px; color:var(--brand-500);"></i>
+                  </div>
                   <div class="servicio-btn-name">Delivery</div>
                 </button>
               </div>
@@ -736,6 +688,58 @@
         </div>
 
       </div><!-- /panel-nueva-orden -->
+
+      <!-- ══ Panel derecho: órdenes activas ══ -->
+      <div class="panel-ordenes" id="panelOrdenes">
+
+        <!-- Filtros -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <h1 style="font-family:'Poppins',sans-serif;font-weight:700;font-size:1.2rem;color:var(--text-primary);">Órdenes del día</h1>
+          <div class="filter-chips" id="filtroEstado" style="margin:0">
+            <button class="chip active" onclick="filtrarEstado('todos', this)">Todas</button>
+            <button class="chip" onclick="filtrarEstado('recibido', this)">Recibidas</button>
+            <button class="chip" onclick="filtrarEstado('en_lavado', this)">En lavado</button>
+            <button class="chip" onclick="filtrarEstado('en_seco', this)">En seco</button>
+            <button class="chip" onclick="filtrarEstado('en_planchado', this)">Planchado</button>
+            <button class="chip" onclick="filtrarEstado('listo', this)">Listas</button>
+            <button class="chip" onclick="filtrarEstado('entregado', this)">Entregadas</button>
+          </div>
+        </div>
+
+        <!-- Vista Kanban -->
+        <div id="vistaKanban" class="kanban-cols">
+          <!-- Se genera dinámicamente -->
+        </div>
+
+        <!-- Vista Lista -->
+        <div id="vistaLista" class="hidden">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Cliente</th>
+                  <th>Prendas</th>
+                  <th>Estado</th>
+                  <th>Total</th>
+                  <th>Prometida</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tablaOrdenes">
+                <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Cargando órdenes…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Estado loading -->
+        <div id="loadingOrdenes" class="loading-state" style="display:none">
+          <div class="spinner"></div>
+          <span>Cargando órdenes…</span>
+        </div>
+
+      </div>
 
     </div><!-- /recepcion-layout -->
 
@@ -870,6 +874,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   ]);
 
   iniciarRealtime();
+
+  // Inicializar todos los iconos Lucide (incluye los de la sección Entrega)
+  lucide.createIcons();
 });
 
 /* ── Cargar servicios desde Supabase ── */
