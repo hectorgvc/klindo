@@ -7,6 +7,8 @@
   <meta name="description" content="Módulo de recepción de prendas — Klindo" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="assets/css/main.css" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     /* ── Layout específico recepción ── */
     .recepcion-layout {
@@ -461,7 +463,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a8 8 0 0 1-8-8 8 8 0 0 1 8-8c0 2.21.895 4.21 2.343 5.657A8 8 0 0 1 12 22Z"/><circle cx="12" cy="14" r="2"/></svg>
+        <i data-lucide="droplets" style="width:20px;height:20px;color:white;"></i>
       </div>
       <div class="sidebar-logo-text">Klin<span>do</span></div>
     </div>
@@ -471,44 +473,44 @@
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Operaciones</div>
       <a href="recepcion.html" class="sidebar-link active">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <i data-lucide="file-text"></i>
         Recepción
       </a>
       <a href="planta.html" class="sidebar-link">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <i data-lucide="layout-grid"></i>
         Vista Planta
       </a>
       <a href="delivery.html" class="sidebar-link" id="navDelivery" style="display:none">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3"/><rect x="9" y="11" width="14" height="10" rx="1"/><circle cx="12" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg>
+        <i data-lucide="bike"></i>
         Delivery
       </a>
 
       <div class="sidebar-section-label" style="margin-top:8px">Administración</div>
       <a href="admin/index.html" class="sidebar-link">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <i data-lucide="layout-dashboard"></i>
         Dashboard
       </a>
       <a href="admin/ordenes.html" class="sidebar-link">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+        <i data-lucide="clipboard-list"></i>
         Órdenes
       </a>
       <a href="admin/servicios.html" class="sidebar-link">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        <i data-lucide="sparkles"></i>
         Servicios
       </a>
       <a href="admin/clientes.html" class="sidebar-link">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <i data-lucide="users"></i>
         Clientes
       </a>
       <a href="admin/configuracion.html" class="sidebar-link">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <i data-lucide="settings"></i>
         Configuración
       </a>
     </nav>
 
     <div class="sidebar-footer">
       <button class="sidebar-link w-full" style="border:none;background:none;" onclick="window.auth.logout()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <i data-lucide="log-out"></i>
         Cerrar sesión
       </button>
     </div>
@@ -520,9 +522,9 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="topbar-neg">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <i data-lucide="file-text" style="width:18px;height:18px;"></i>
         <span>Recepción</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
         <span class="topbar-neg-name" id="topbarTenant">Cargando…</span>
       </div>
 
@@ -607,7 +609,7 @@
       <div class="panel-nueva-orden">
 
         <div class="panel-nueva-header">
-          <div class="panel-nueva-title">➕ Nueva Orden</div>
+          <div class="panel-nueva-title"><i data-lucide="plus-circle" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:4px;"></i>Nueva Orden</div>
           <div class="panel-nueva-subtitle" id="nuevaOrdenNum">Próximo número: —</div>
         </div>
 
@@ -669,7 +671,7 @@
             </div>
             <div class="section-box-body">
               <!-- Buscador rápido -->
-              <input id="buscarServicio" type="search" class="form-control" placeholder="🔍 Buscar servicio…" oninput="filtrarServicios(this.value)" />
+              <input id="buscarServicio" type="search" class="form-control" placeholder="Buscar servicio…" oninput="filtrarServicios(this.value)" />
 
               <!-- Grid de servicios -->
               <div class="servicio-grid" id="serviciosGrid">
@@ -889,6 +891,20 @@ async function cargarServicios() {
   renderServicios(serviciosCatalogo);
 }
 
+function getIconoPorCategoria(s) {
+  const catNombre = (s.categorias_servicio?.nombre || '').toLowerCase();
+  const servNombre = (s.nombre || '').toLowerCase();
+
+  if (catNombre.includes('lavado') || servNombre.includes('lavado')) return 'washing-machine';
+  if (catNombre.includes('secado') || servNombre.includes('secado')) return 'wind';
+  if (catNombre.includes('planchado') || servNombre.includes('planchado')) return 'zap';
+  if (catNombre.includes('tintoreria') || catNombre.includes('tintorería') || servNombre.includes('tintoreria')) return 'sparkles';
+  if (catNombre.includes('combo') || servNombre.includes('combo')) return 'package';
+  if (catNombre.includes('hogar') || servNombre.includes('hogar')) return 'home';
+  if (catNombre.includes('extras') || servNombre.includes('extras')) return 'plus-circle';
+  return 'shirt';
+}
+
 function renderServicios(lista) {
   const grid = document.getElementById('serviciosGrid');
 
@@ -904,26 +920,29 @@ function renderServicios(lista) {
   grid.innerHTML = lista.map(s => {
     const precio = s.precio_por_unidad || s.precio_fijo || s.precio_por_kilo || 0;
     const unidad = s.unidad_cobro === 'kilo' ? '/kg' : s.unidad_cobro === 'metro' ? '/m' : '/u';
+    const icono = getIconoPorCategoria(s);
     return `
       <button class="servicio-btn" data-id="${s.id}" onclick="agregarServicio('${s.id}')">
         <div class="servicio-btn-icon" style="background:${s.categorias_servicio?.color || '#e0f2fe'}22;">
-          ${s.icono_emoji || '🧺'}
+          <i data-lucide="${icono}" style="width:28px; height:28px; color:var(--brand-500);"></i>
         </div>
         <div class="servicio-btn-name">${s.nombre}</div>
         <div class="servicio-btn-precio">${MONEDA} ${precio.toFixed(2)}${unidad}</div>
       </button>`;
   }).join('');
+
+  lucide.createIcons();
 }
 
 /* Servicios de ejemplo si no carga BD */
 function mostrarServiciosFallback() {
   const fallback = [
-    { id: 'f1', nombre: 'Camisa', precio_por_unidad: 150, icono_emoji: '👔', categorias_servicio: { color: '#e0f2fe' }, unidad_cobro: 'unidad' },
-    { id: 'f2', nombre: 'Pantalón', precio_por_unidad: 200, icono_emoji: '👖', categorias_servicio: { color: '#e0f2fe' }, unidad_cobro: 'unidad' },
-    { id: 'f3', nombre: 'Sábanas', precio_por_unidad: 350, icono_emoji: '🛏️', categorias_servicio: { color: '#f0fdf4' }, unidad_cobro: 'unidad' },
-    { id: 'f4', nombre: 'Edredón', precio_por_unidad: 600, icono_emoji: '🊱', categorias_servicio: { color: '#f0fdf4' }, unidad_cobro: 'unidad' },
-    { id: 'f5', nombre: 'Traje', precio_por_unidad: 800, icono_emoji: '🤵', categorias_servicio: { color: '#faf5ff' }, unidad_cobro: 'unidad' },
-    { id: 'f6', nombre: 'Ropa x Kg', precio_por_kilo: 120, icono_emoji: '⚖️', categorias_servicio: { color: '#fffbeb' }, unidad_cobro: 'kilo' },
+    { id: 'f1', nombre: 'Camisa', precio_por_unidad: 150, categorias_servicio: { nombre: 'Lavado', color: '#e0f2fe' }, unidad_cobro: 'unidad' },
+    { id: 'f2', nombre: 'Pantalón', precio_por_unidad: 200, categorias_servicio: { nombre: 'Lavado', color: '#e0f2fe' }, unidad_cobro: 'unidad' },
+    { id: 'f3', nombre: 'Sábanas', precio_por_unidad: 350, categorias_servicio: { nombre: 'Hogar', color: '#f0fdf4' }, unidad_cobro: 'unidad' },
+    { id: 'f4', nombre: 'Edredón', precio_por_unidad: 600, categorias_servicio: { nombre: 'Hogar', color: '#f0fdf4' }, unidad_cobro: 'unidad' },
+    { id: 'f5', nombre: 'Traje', precio_por_unidad: 800, categorias_servicio: { nombre: 'Tintoreria', color: '#faf5ff' }, unidad_cobro: 'unidad' },
+    { id: 'f6', nombre: 'Ropa x Kg', precio_por_kilo: 120, categorias_servicio: { nombre: 'Lavado', color: '#fffbeb' }, unidad_cobro: 'kilo' },
   ];
   serviciosCatalogo = fallback;
   renderServicios(fallback);
