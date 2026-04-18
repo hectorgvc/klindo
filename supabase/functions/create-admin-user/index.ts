@@ -57,7 +57,7 @@ serve(async (req) => {
     }
 
     // Obtener datos posteados
-    const { nombre, email, password, tenant_id, rol } = await req.json()
+    const { nombre, email, telefono, password, tenant_id, rol } = await req.json()
     const userRole = rol || 'admin'
 
     // Seguridad adicional para admins normales
@@ -118,6 +118,7 @@ serve(async (req) => {
           id: userId,
           tenant_id,
           nombre,
+          telefono: telefono || null,
           rol: userRole,
           activo: true
         })
@@ -135,6 +136,7 @@ serve(async (req) => {
         .update({
           tenant_id,
           nombre,
+          telefono: telefono || null,
           rol: userRole,
           activo: true
         })

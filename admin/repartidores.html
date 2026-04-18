@@ -143,6 +143,10 @@
               <input type="email" id="repEmail" required class="form-control" placeholder="repartidor@ejemplo.com">
             </div>
             <div class="form-group">
+              <label class="form-label">Teléfono de Contacto</label>
+              <input type="tel" id="repTelefono" class="form-control" placeholder="809-000-0000">
+            </div>
+            <div class="form-group">
               <label class="form-label">Contraseña Temporal *</label>
               <input type="text" id="repPassword" required class="form-control" placeholder="Mínimo 6 caracteres">
             </div>
@@ -245,6 +249,9 @@
              </div>
              <div style="flex:1;">
                 <h3 style="font-weight:700; font-size:1.1rem; color:var(--text-primary); margin-bottom:2px;">${rep.nombre}</h3>
+                ${rep.telefono ? `<a href="tel:${rep.telefono}" style="display:inline-flex; align-items:center; gap:4px; font-size:.85rem; color:var(--success); text-decoration:none; margin-top:4px;">
+                  <i data-lucide="phone" style="width:14px; height:14px;"></i> ${rep.telefono}
+                </a>` : ''}
                 <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
                    <span class="badge" style="${rep.activo ? 'background:var(--success-bg); color:var(--success);' : 'background:var(--danger-bg); color:var(--danger);'}">${rep.activo ? 'Activo' : 'Suspendido'}</span>
                    <span class="badge" style="background:var(--bg-tertiary); color:var(--text-secondary);">Hoy: ${rep.entregasHoy} Entregas</span>
@@ -313,6 +320,7 @@
          const deliveryData = {
            nombre: document.getElementById('repName').value,
            email: document.getElementById('repEmail').value,
+           telefono: document.getElementById('repTelefono').value,
            password: document.getElementById('repPassword').value,
            tenant_id: session_data.tenant_id,
            rol: 'repartidor'
