@@ -408,10 +408,10 @@
           .maybeSingle();
 
         if (error) throw error;
-
-        // Update local memory info
-        session_data.tenants = data;
-        document.getElementById('tenantNameDisplay').textContent = data.nombre;
+        if (data) {
+          session_data.tenants = data;
+          document.getElementById('tenantNameDisplay').textContent = data.nombre;
+        }
 
         showToast('Configuración actualizada', 'success');
       } catch (err) {
