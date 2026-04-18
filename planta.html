@@ -196,7 +196,7 @@
       session_data = await window.auth.protectAdminRoute();
       if (!session_data) return;
 
-      document.getElementById('tenantNameDisplay').textContent = `${session_data.tenant.nombre} - Planta`;
+      document.getElementById('tenantNameDisplay').textContent = `${session_data.tenants.nombre} - Planta`;
       
       setInterval(() => {
          document.getElementById('clockDisplay').textContent = new Date().toLocaleTimeString('es-DO');
@@ -213,7 +213,7 @@
           const { data: ordenes, error } = await window.supabaseClient
              .from('ordenes_servicio')
              .select('*, items_orden(*)')
-             .eq('tenant_id', session_data.tenant.id)
+             .eq('tenant_id', session_data.tenant_id)
              .in('estado', ['recibido', 'en_lavado', 'en_seco', 'en_planchado'])
              .order('created_at', { ascending: true });
 
