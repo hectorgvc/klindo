@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Klindo — Portal Repartidor</title>
+  <meta name="description" content="Portal de repartidores Klindo">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    /* Mobile-first layout */
+    .delivery-app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-secondary);
+    }
+
+    /* Header */
+    .delivery-header {
+      background: linear-gradient(135deg, var(--brand-500) 0%, var(--cyan-500) 100%);
+      color: white;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .delivery-header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .delivery-logo {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+
+    .delivery-logo span {
+      opacity: 0.8;
+    }
+
+    .delivery-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .delivery-user-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .delivery-logout-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 8px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delivery-logout-btn:active {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* Tabs */
+    .delivery-tabs {
+      display: flex;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .delivery-tab {
+      flex: 1;
+      padding: 16px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .delivery-tab.active {
+      color: var(--brand-600);
+    }
+
+    .delivery-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 20%;
+      right: 20%;
+      height: 3px;
+      background: var(--brand-500);
+      border-radius: 3px 3px 0 0;
+    }
+
+    .delivery-tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      background: var(--brand-500);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      margin-left: 6px;
+      padding: 0 6px;
+    }
+
+    /* Content */
+    .delivery-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .delivery-section {
+      display: none;
+    }
+
+    .delivery-section.active {
+      display: block;
+    }
+
+    /* Cards */
+    .delivery-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .delivery-card-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-secondary);
+    }
+
+    .delivery-order-num {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--brand-700);
+    }
+
+    .delivery-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    .delivery-status-badge.en-camino {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .delivery-status-badge.entregado {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .delivery-card-body {
+      padding: 16px;
+    }
+
+    .delivery-info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .delivery-info-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .delivery-info-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--brand-600);
+      flex-shrink: 0;
+    }
+
+    .delivery-info-content {
+      flex: 1;
+    }
+
+    .delivery-info-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .delivery-info-value {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+
+    .delivery-phone-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--success);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .delivery-card-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .delivery-btn-entregar {
+      width: 100%;
+      padding: 14px;
+      background: var(--success);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .delivery-btn-entregar:active {
+      background: #059669;
+    }
+
+    /* Empty state */
+    .delivery-empty {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .delivery-empty-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      color: var(--text-muted);
+    }
+
+    .delivery-empty-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .delivery-empty-text {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Loading */
+    .delivery-skeleton {
+      background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius-md);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Toast */
+    .delivery-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--text-primary);
+      color: white;
+      padding: 12px 24px;
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .delivery-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .delivery-toast.error {
+      background: var(--danger);
+    }
+
+    .delivery-toast.success {
+      background: var(--success);
+    }
+  </style>
+</head>
+<body>
+  <div class="delivery-app" id="deliveryApp">
+    <!-- Header -->
+    <header class="delivery-header">
+      <div class="delivery-header-brand">
+        <i data-lucide="droplets" style="width:24px; height:24px;"></i>
+        <span class="delivery-logo">Klin<span>do</span></span>
+      </div>
+      <div class="delivery-user">
+        <span class="delivery-user-name" id="userName">Cargando...</span>
+        <button class="delivery-logout-btn" onclick="logout()" title="Cerrar sesión">
+          <i data-lucide="log-out" style="width:20px; height:20px;"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="delivery-tabs">
+      <button class="delivery-tab active" onclick="switchTab('entregas')" id="tabEntregas">
+        Mis Entregas
+        <span class="delivery-tab-badge" id="badgeEntregas" style="display:none;">0</span>
+      </button>
+      <button class="delivery-tab" onclick="switchTab('historial')" id="tabHistorial">
+        Historial
+      </button>
+    </div>
+
+    <!-- Content -->
+    <main class="delivery-content">
+      <!-- Sección: Mis Entregas -->
+      <section class="delivery-section active" id="sectionEntregas">
+        <div id="listaEntregas">
+          <!-- Skeleton loading -->
+          <div class="delivery-card">
+            <div class="delivery-card-header">
+              <div class="delivery-skeleton" style="width:100px; height:20px;"></div>
+              <div class="delivery-skeleton" style="width:80px; height:24px;"></div>
+            </div>
+            <div class="delivery-card-body">
+              <div class="delivery-skeleton" style="width:100%; height:60px; margin-bottom:12px;"></div>
+              <div class="delivery-skeleton" style="width:100%; height:40px;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sección: Historial -->
+      <section class="delivery-section" id="sectionHistorial">
+        <div id="listaHistorial">
+          <div class="delivery-empty">
+            <div class="delivery-empty-icon">
+              <i data-lucide="history" style="width:40px; height:40px;"></i>
+            </div>
+            <div class="delivery-empty-title">Sin entregas</div>
+            <div class="delivery-empty-text">Aún no has completado ninguna entrega</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="delivery-toast">
+    <i data-lucide="check-circle" style="width:20px; height:20px;"></i>
+    <span id="toastMessage">Operación exitosa</span>
+  </div>
+
+  <script src="assets/js/supabase.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    let currentUser = null;
+    let ordenesActivas = [];
+    let ordenesHistorial = [];
+
+    // Proteger ruta para repartidores
+    async function protectRepartidorRoute() {
+      const { data: { session } } = await window.supabaseClient.auth.getSession();
+
+      if (!session) {
+        window.location.href = 'login.html';
+        return null;
+      }
+
+      const profile = await window.auth.getCurrentProfile();
+
+      if (!profile) {
+        await window.auth.logout();
+        return null;
+      }
+
+      // Verificar rol específico de repartidor
+      if (profile.rol !== 'repartidor') {
+        window.location.href = 'login.html?error=unauthorized';
+        return null;
+      }
+
+      return profile;
+    }
+
+    async function init() {
+      currentUser = await protectRepartidorRoute();
+      if (!currentUser) return;
+
+      document.getElementById('userName').textContent = currentUser.nombre || 'Repartidor';
+
+      await cargarOrdenes();
+    }
+
+    async function cargarOrdenes() {
+      try {
+        const repartidorId = currentUser.id;
+
+        // Cargar órdenes en camino
+        const { data: activas, error: errorActivas } = await window.supabaseClient
+          .from('ordenes_servicio')
+          .select('*')
+          .eq('repartidor_id', repartidorId)
+          .eq('estado', 'en_camino')
+          .order('updated_at', { ascending: false });
+
+        if (errorActivas) throw errorActivas;
+        ordenesActivas = activas || [];
+
+        // Cargar órdenes entregadas (últimas 50)
+        const { data: historial, error: errorHistorial } = await window.supabaseClient
+          .from('ordenes_servicio')
+          .select('*')
+          .eq('repartidor_id', repartidorId)
+          .eq('estado', 'entregado')
+          .order('updated_at', { ascending: false })
+          .limit(50);
+
+        if (errorHistorial) throw errorHistorial;
+        ordenesHistorial = historial || [];
+
+        renderEntregas();
+        renderHistorial();
+        actualizarBadge();
+
+      } catch (error) {
+        console.error('Error cargando órdenes:', error);
+        showToast('Error al cargar órdenes', 'error');
+      }
+    }
+
+    function renderEntregas() {
+      const container = document.getElementById('listaEntregas');
+
+      if (ordenesActivas.length === 0) {
+        container.innerHTML = `
+          <div class="delivery-empty">
+            <div class="delivery-empty-icon">
+              <i data-lucide="package" style="width:40px; height:40px;"></i>
+            </div>
+            <div class="delivery-empty-title">Sin entregas pendientes</div>
+            <div class="delivery-empty-text">No tienes órdenes asignadas para entregar</div>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = ordenesActivas.map(orden => `
+        <div class="delivery-card">
+          <div class="delivery-card-header">
+            <span class="delivery-order-num">${orden.numero_orden || '#' + String(orden.numero_dia).padStart(3,'0')}</span>
+            <span class="delivery-status-badge en-camino">
+              <i data-lucide="truck" style="width:12px; height:12px;"></i>
+              En camino
+            </span>
+          </div>
+          <div class="delivery-card-body">
+            <div class="delivery-info-row">
+              <div class="delivery-info-icon">
+                <i data-lucide="user" style="width:18px; height:18px;"></i>
+              </div>
+              <div class="delivery-info-content">
+                <div class="delivery-info-label">Cliente</div>
+                <div class="delivery-info-value">${escapeHtml(orden.cliente_nombre)}</div>
+              </div>
+            </div>
+            ${orden.cliente_telefono ? `
+            <div class="delivery-info-row">
+              <div class="delivery-info-icon">
+                <i data-lucide="phone" style="width:18px; height:18px;"></i>
+              </div>
+              <div class="delivery-info-content">
+                <div class="delivery-info-label">Teléfono</div>
+                <a href="tel:${escapeHtml(orden.cliente_telefono)}" class="delivery-phone-link">
+                  ${escapeHtml(orden.cliente_telefono)}
+                  <i data-lucide="phone-call" style="width:14px; height:14px;"></i>
+                </a>
+              </div>
+            </div>
+            ` : ''}
+            ${orden.cliente_direccion ? `
+            <div class="delivery-info-row">
+              <div class="delivery-info-icon">
+                <i data-lucide="map-pin" style="width:18px; height:18px;"></i>
+              </div>
+              <div class="delivery-info-content">
+                <div class="delivery-info-label">Dirección</div>
+                <div class="delivery-info-value">${escapeHtml(orden.cliente_direccion)}</div>
+              </div>
+            </div>
+            ` : ''}
+            ${orden.nota_entrega ? `
+            <div class="delivery-info-row">
+              <div class="delivery-info-icon">
+                <i data-lucide="file-text" style="width:18px; height:18px;"></i>
+              </div>
+              <div class="delivery-info-content">
+                <div class="delivery-info-label">Notas</div>
+                <div class="delivery-info-value">${escapeHtml(orden.nota_entrega)}</div>
+              </div>
+            </div>
+            ` : ''}
+          </div>
+          <div class="delivery-card-footer">
+            <button class="delivery-btn-entregar" onclick="marcarEntregado('${orden.id}')">
+              <i data-lucide="check-circle" style="width:20px; height:20px;"></i>
+              Marcar Entregado
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function renderHistorial() {
+      const container = document.getElementById('listaHistorial');
+
+      if (ordenesHistorial.length === 0) {
+        container.innerHTML = `
+          <div class="delivery-empty">
+            <div class="delivery-empty-icon">
+              <i data-lucide="history" style="width:40px; height:40px;"></i>
+            </div>
+            <div class="delivery-empty-title">Sin entregas</div>
+            <div class="delivery-empty-text">Aún no has completado ninguna entrega</div>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = ordenesHistorial.map(orden => {
+        const fechaEntrega = new Date(orden.updated_at).toLocaleString('es-DO', {
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        return `
+        <div class="delivery-card">
+          <div class="delivery-card-header">
+            <span class="delivery-order-num">${orden.numero_orden || '#' + String(orden.numero_dia).padStart(3,'0')}</span>
+            <span class="delivery-status-badge entregado">
+              <i data-lucide="check" style="width:12px; height:12px;"></i>
+              Entregado
+            </span>
+          </div>
+          <div class="delivery-card-body">
+            <div class="delivery-info-row">
+              <div class="delivery-info-icon">
+                <i data-lucide="user" style="width:18px; height:18px;"></i>
+              </div>
+              <div class="delivery-info-content">
+                <div class="delivery-info-label">Cliente</div>
+                <div class="delivery-info-value">${escapeHtml(orden.cliente_nombre)}</div>
+              </div>
+            </div>
+            <div class="delivery-info-row">
+              <div class="delivery-info-icon">
+                <i data-lucide="calendar" style="width:18px; height:18px;"></i>
+              </div>
+              <div class="delivery-info-content">
+                <div class="delivery-info-label">Entregado el</div>
+                <div class="delivery-info-value">${fechaEntrega}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `}).join('');
+
+      lucide.createIcons();
+    }
+
+    function actualizarBadge() {
+      const badge = document.getElementById('badgeEntregas');
+      const count = ordenesActivas.length;
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function switchTab(tab) {
+      // Actualizar tabs
+      document.querySelectorAll('.delivery-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.delivery-section').forEach(s => s.classList.remove('active'));
+
+      if (tab === 'entregas') {
+        document.getElementById('tabEntregas').classList.add('active');
+        document.getElementById('sectionEntregas').classList.add('active');
+      } else {
+        document.getElementById('tabHistorial').classList.add('active');
+        document.getElementById('sectionHistorial').classList.add('active');
+      }
+    }
+
+    async function marcarEntregado(ordenId) {
+      if (!confirm('¿Confirmas que has entregado esta orden al cliente?')) return;
+
+      try {
+        const { error } = await window.supabaseClient
+          .from('ordenes_servicio')
+          .update({
+            estado: 'entregado',
+            pagado: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', ordenId);
+
+        if (error) throw error;
+
+        showToast('Orden marcada como entregada');
+        await cargarOrdenes();
+
+      } catch (error) {
+        console.error('Error al marcar entregado:', error);
+        showToast('Error al actualizar orden', 'error');
+      }
+    }
+
+    function logout() {
+      window.auth.logout();
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      toastMessage.textContent = message;
+      toast.className = `delivery-toast ${type} show`;
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Inicializar
+    init();
+  </script>
+</body>
+</html>
+
+<!--
+POLÍTICA RLS RECOMENDADA:
+
+-- El repartidor solo ve órdenes donde repartidor_id = auth.uid()
+CREATE POLICY "Repartidor ve sus órdenes asignadas" ON ordenes_servicio
+  FOR SELECT USING (repartidor_id = auth.uid());
+
+-- El repartidor solo puede actualizar órdenes donde repartidor_id = auth.uid()
+CREATE POLICY "Repartidor actualiza sus órdenes" ON ordenes_servicio
+  FOR UPDATE USING (repartidor_id = auth.uid());
+-->
