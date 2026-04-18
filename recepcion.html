@@ -887,6 +887,68 @@
   </div>
 </div>
 
+<!-- ══ Modal: Generar Factura ══ -->
+<div class="modal-overlay" id="modalFactura">
+  <div class="modal" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title"><i data-lucide="receipt" style="width:20px;height:20px;display:inline;vertical-align:middle;margin-right:8px;"></i>Generar Factura</h3>
+      <button type="button" class="modal-close" onclick="cerrarModal('modalFactura')">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label class="form-label">Tipo de Comprobante</label>
+        <select id="facturaTipo" class="form-control" onchange="toggleFacturaCampos()">
+          <option value="B02">B02 - Consumidor Final</option>
+          <option value="B01">B01 - Crédito Fiscal</option>
+        </select>
+      </div>
+
+      <div id="camposB02" style="display: block;">
+        <div class="form-group">
+          <label class="form-label">Nombre del Cliente</label>
+          <input type="text" id="facturaClienteB02" class="form-control" placeholder="Nombre del cliente">
+        </div>
+      </div>
+
+      <div id="camposB01" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">RNC (11 dígitos)</label>
+          <input type="text" id="facturaRNC" class="form-control" placeholder="1-31-XXXXX-X" maxlength="13">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Razón Social</label>
+          <input type="text" id="facturaRazonSocial" class="form-control" placeholder="Nombre legal de la empresa">
+        </div>
+      </div>
+
+      <div style="background: var(--bg-secondary); border-radius: var(--radius-md); padding: 16px; margin-top: 20px;">
+        <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Resumen</div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span style="color: var(--text-secondary);">Subtotal:</span>
+          <span id="facturaResumenSubtotal" style="font-weight: 600;">RD$ 0.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span style="color: var(--text-secondary);">ITBIS (18%):</span>
+          <span id="facturaResumenITBIS" style="font-weight: 600;">RD$ 0.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border); margin-top: 8px;">
+          <span style="font-weight: 700;">Total:</span>
+          <span id="facturaResumenTotal" style="font-weight: 700; color: var(--brand-600);">RD$ 0.00</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalFactura')">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="btnConfirmarFactura" onclick="confirmarGenerarFactura()">
+        <i data-lucide="receipt" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:6px;"></i>
+        Generar Factura
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ Modal: Nueva Orden ══ -->
 <div class="modal-overlay modal-nueva-orden" id="modalNuevaOrden">
   <div class="modal">
@@ -1748,8 +1810,18 @@ async function verDetalle(ordenId) {
   // Botón marcar pagado
   const acciones = document.getElementById('detalleAcciones');
   acciones.innerHTML = '';
+
+  // Botón Generar Factura (solo si estado es listo o entregado)
+  if (orden.estado === 'listo' || orden.estado === 'entregado') {
+    acciones.innerHTML += `
+      <button class="btn btn-primary btn-sm" onclick="generarFactura('${orden.id}')">
+        <i data-lucide="receipt" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:4px;"></i>
+        Generar Factura
+      </button>`;
+  }
+
   if (!orden.pagado && orden.estado !== 'cancelado') {
-    acciones.innerHTML = `
+    acciones.innerHTML += `
       <button class="btn btn-success btn-sm" onclick="marcarPagado('${orden.id}')">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Marcar pagado
@@ -1899,6 +1971,161 @@ async function marcarPagado(ordenId) {
   if (acciones) acciones.innerHTML = '';
 
   showToast('Orden marcada como pagada ✅', 'success');
+}
+
+/* ── Facturación ── */
+let ordenFacturaPendiente = null;
+let ordenFacturaData = null;
+
+async function generarFactura(ordenId) {
+  // Buscar la orden
+  const orden = ordenesHoy.find(o => o.id === ordenId);
+  if (!orden) {
+    showToast('Orden no encontrada', 'error');
+    return;
+  }
+
+  // Verificar si ya tiene factura
+  const { data: facturaExistente } = await window.supabaseClient
+    .from('facturas')
+    .select('id')
+    .eq('orden_id', ordenId)
+    .eq('tenant_id', tenantId)
+    .maybeSingle();
+
+  if (facturaExistente) {
+    // Redirigir a la factura existente
+    window.open(`admin/factura-detalle.html?id=${facturaExistente.id}`, '_blank');
+    return;
+  }
+
+  ordenFacturaPendiente = ordenId;
+  ordenFacturaData = orden;
+
+  // Pre-llenar campos
+  document.getElementById('facturaClienteB02').value = orden.cliente_nombre || '';
+  document.getElementById('facturaRNC').value = '';
+  document.getElementById('facturaRazonSocial').value = '';
+
+  // Calcular totales
+  const items = orden.items_orden || [];
+  const subtotal = items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+  const itbis = subtotal * 0.18;
+  const total = subtotal + itbis;
+
+  // Mostrar resumen
+  document.getElementById('facturaResumenSubtotal').textContent = `${MONEDA} ${subtotal.toFixed(2)}`;
+  document.getElementById('facturaResumenITBIS').textContent = `${MONEDA} ${itbis.toFixed(2)}`;
+  document.getElementById('facturaResumenTotal').textContent = `${MONEDA} ${total.toFixed(2)}`;
+
+  // Resetear a B02 por defecto
+  document.getElementById('facturaTipo').value = 'B02';
+  toggleFacturaCampos();
+
+  lucide.createIcons();
+  abrirModal('modalFactura');
+}
+
+function toggleFacturaCampos() {
+  const tipo = document.getElementById('facturaTipo').value;
+  const camposB01 = document.getElementById('camposB01');
+  const camposB02 = document.getElementById('camposB02');
+
+  if (tipo === 'B01') {
+    camposB01.style.display = 'block';
+    camposB02.style.display = 'none';
+  } else {
+    camposB01.style.display = 'none';
+    camposB02.style.display = 'block';
+  }
+}
+
+async function confirmarGenerarFactura() {
+  if (!ordenFacturaPendiente || !ordenFacturaData) return;
+
+  const btn = document.getElementById('btnConfirmarFactura');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;border-width:2px;"></div> Generando...';
+
+  try {
+    const tipo = document.getElementById('facturaTipo').value;
+
+    // Validar RNC si es B01
+    if (tipo === 'B01') {
+      const rnc = document.getElementById('facturaRNC').value.trim();
+      const razonSocial = document.getElementById('facturaRazonSocial').value.trim();
+
+      if (!rnc) {
+        showToast('Debe ingresar el RNC del cliente', 'error');
+        return;
+      }
+      if (!razonSocial) {
+        showToast('Debe ingresar la razón social del cliente', 'error');
+        return;
+      }
+    }
+
+    // Contar facturas del tenant por tipo para correlativo
+    const { count } = await window.supabaseClient
+      .from('facturas')
+      .select('*', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('tipo_comprobante', tipo);
+
+    const siguienteNumero = (count || 0) + 1;
+    const numeroFactura = `${tipo}-${String(siguienteNumero).padStart(7, '0')}`;
+
+    // Calcular valores
+    const items = ordenFacturaData.items_orden || [];
+    const subtotal = items.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+    const itbis = subtotal * 0.18;
+    const total = subtotal + itbis;
+
+    // Preparar datos del cliente
+    let clienteNombre = '';
+    let clienteRnc = null;
+
+    if (tipo === 'B01') {
+      clienteRnc = document.getElementById('facturaRNC').value.trim();
+      clienteNombre = document.getElementById('facturaRazonSocial').value.trim();
+    } else {
+      clienteNombre = document.getElementById('facturaClienteB02').value.trim() || ordenFacturaData.cliente_nombre || 'Consumidor Final';
+    }
+
+    // Insertar factura
+    const { data: factura, error } = await window.supabaseClient
+      .from('facturas')
+      .insert([{
+        tenant_id: tenantId,
+        orden_id: ordenFacturaPendiente,
+        numero_factura: numeroFactura,
+        tipo_comprobante: tipo,
+        cliente_nombre: clienteNombre,
+        cliente_rnc: clienteRnc,
+        subtotal: subtotal,
+        itbis: itbis,
+        total: total,
+        moneda: MONEDA
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    showToast(`Factura ${numeroFactura} generada correctamente`, 'success');
+    cerrarModal('modalFactura');
+
+    // Redirigir a la vista de impresión
+    window.open(`admin/factura-detalle.html?id=${factura.id}`, '_blank');
+
+  } catch (err) {
+    console.error('Error generando factura:', err);
+    showToast(err.message || 'Error al generar factura', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="receipt" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:6px;"></i> Generar Factura';
+    lucide.createIcons();
+  }
 }
 
 /* ── Realtime ── */

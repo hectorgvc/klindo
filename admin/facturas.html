@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klindo | Facturas</title>
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="droplets"></i>
+        </div>
+        <div class="sidebar-logo-text">
+          Klin<span>do</span>
+        </div>
+      </div>
+
+      <div class="sidebar-tenant" id="tenantNameDisplay">
+        ...
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Gestión</div>
+        <a href="index.html" class="sidebar-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="ordenes.html" class="sidebar-link">
+          <i data-lucide="file-text"></i>
+          <span>Historial Órdenes</span>
+        </a>
+        <a href="facturas.html" class="sidebar-link active">
+          <i data-lucide="receipt"></i>
+          <span>Facturas</span>
+        </a>
+        <a href="servicios.html" class="sidebar-link">
+          <i data-lucide="list"></i>
+          <span>Servicios y Precios</span>
+        </a>
+        <a href="clientes.html" class="sidebar-link">
+          <i data-lucide="users"></i>
+          <span>Directorio Clientes</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:12px;">Negocio</div>
+        <a href="configuracion.html" class="sidebar-link">
+          <i data-lucide="settings"></i>
+          <span>Configuración</span>
+        </a>
+        <a href="repartidores.html" class="sidebar-link" id="navRepartidores" style="display:none;">
+          <i data-lucide="bike"></i>
+          <span>Delivery</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:12px;">Operación App</div>
+        <a href="../recepcion.html" class="sidebar-link">
+          <i data-lucide="shopping-bag"></i>
+          <span>Terminal Recepción</span>
+        </a>
+        <a href="../planta.html" class="sidebar-link">
+          <i data-lucide="factory"></i>
+          <span>Monitor de Planta</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom: 12px;">
+          <div class="avatar">
+            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div id="userName" style="font-weight:700; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cargando...</div>
+            <div id="userRole" style="font-size:0.75rem; color:var(--brand-500); font-weight:600; text-transform:capitalize;">Admin</div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn btn-ghost btn-block" style="justify-content: flex-start;">
+          <i data-lucide="log-out"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-title">Facturas Emitidas</div>
+        <div class="topbar-actions">
+           <div class="form-group" style="margin-bottom:0; width:180px;">
+             <select id="tipoFilter" class="form-control" onchange="loadFacturas()">
+               <option value="all">Todos los tipos</option>
+               <option value="B01">B01 - Crédito Fiscal</option>
+               <option value="B02">B02 - Consumidor Final</option>
+             </select>
+           </div>
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <div class="page-header">
+           <div>
+             <h1 class="page-title">Historial de Facturas</h1>
+             <p class="page-subtitle">Comprobantes fiscales emitidos a clientes</p>
+           </div>
+        </div>
+
+        <div class="card">
+           <div class="table-wrapper">
+             <table>
+               <thead>
+                 <tr>
+                   <th>Número</th>
+                   <th>Tipo</th>
+                   <th>Cliente</th>
+                   <th>ITBIS</th>
+                   <th>Total</th>
+                   <th>Fecha</th>
+                   <th style="text-align:right;">Acciones</th>
+                 </tr>
+               </thead>
+               <tbody id="facturasTable">
+                 <tr>
+                   <td colspan="7" style="text-align:center; padding:40px; color:var(--text-muted);">
+                     <div class="spinner"></div> Cargando facturas...
+                   </td>
+                 </tr>
+               </tbody>
+             </table>
+           </div>
+           <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding:16px;">
+              <span style="font-size:0.85rem; color:var(--text-secondary);" id="paginationInfo">Mostrando últimos 50 registros</span>
+              <div style="display:flex; gap:8px;">
+                 <button class="btn btn-secondary btn-sm" id="prevPage" disabled><i data-lucide="chevron-left"></i></button>
+                 <button class="btn btn-secondary btn-sm" id="nextPage" disabled><i data-lucide="chevron-right"></i></button>
+              </div>
+           </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    let session_data = null;
+    let facturas = [];
+    let currentPage = 1;
+    let itemsPerPage = 50;
+    let totalItems = 0;
+
+    async function init() {
+      session_data = await window.auth.protectAdminRoute();
+      if (!session_data) return;
+
+      document.getElementById('userName').textContent = session_data.nombre;
+      document.getElementById('userRole').textContent = session_data.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenants.nombre;
+
+      if (session_data.tenants.plan === 'pro') {
+         document.getElementById('navRepartidores').style.display = 'flex';
+      }
+
+      await loadFacturas();
+    }
+
+    async function loadFacturas() {
+      const tipoFilter = document.getElementById('tipoFilter').value;
+
+      let query = window.supabaseClient
+        .from('facturas')
+        .select('*', { count: 'exact' })
+        .eq('tenant_id', session_data.tenant_id)
+        .order('created_at', { ascending: false });
+
+      if (tipoFilter !== 'all') {
+        query = query.eq('tipo_comprobante', tipoFilter);
+      }
+
+      // Paginación
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, count, error } = await query;
+
+      if (error) {
+        console.error('Error fetching facturas:', error);
+        document.getElementById('facturasTable').innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger)">Error al cargar facturas</td></tr>`;
+        return;
+      }
+
+      facturas = data || [];
+      totalItems = count || 0;
+
+      renderFacturas();
+      updatePagination();
+    }
+
+    function renderFacturas() {
+      const tbody = document.getElementById('facturasTable');
+      const moneda = session_data.tenants.moneda || 'RD$';
+
+      if (facturas.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="padding: 40px; text-align: center; color: var(--text-muted);">
+              <div>
+                <i data-lucide="receipt" style="width:48px; height:48px; margin:0 auto 12px; opacity:0.5;"></i>
+                <h3 style="font-weight:600; color:var(--text-secondary); margin-bottom:4px;">Sin facturas</h3>
+                <p style="font-size:0.85rem;">No se han emitido comprobantes fiscales aún.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      const tipoLabels = {
+        'B01': { label: 'Crédito Fiscal', color: 'var(--info)', bg: 'var(--info-bg)', border: 'var(--info-border)' },
+        'B02': { label: 'Consumidor Final', color: 'var(--success)', bg: 'var(--success-bg)', border: 'var(--success-border)' }
+      };
+
+      tbody.innerHTML = facturas.map(f => {
+        const tipo = tipoLabels[f.tipo_comprobante] || tipoLabels['B02'];
+        const dateObj = new Date(f.created_at);
+        return `
+        <tr>
+          <td>
+             <span style="font-weight:700; color:var(--text-primary); font-family:monospace;">${f.numero_factura}</span>
+          </td>
+          <td>
+             <span class="badge" style="background:${tipo.bg}; color:${tipo.color}; border:1px solid ${tipo.border}; padding:4px 8px; font-size:0.7rem;">${tipo.label}</span>
+          </td>
+          <td>
+             <div style="font-weight:600; font-size:0.9rem;">${f.cliente_nombre}</div>
+             ${f.cliente_rnc ? `<div style="font-size:0.75rem; color:var(--text-secondary);">RNC: ${f.cliente_rnc}</div>` : ''}
+          </td>
+          <td>
+             <div style="font-weight:600; color:var(--text-secondary);">${moneda} ${Number(f.itbis).toLocaleString('es-DO', {minimumFractionDigits: 2})}</div>
+          </td>
+          <td>
+             <div style="font-weight:700; color:var(--brand-600);">${moneda} ${Number(f.total).toLocaleString('es-DO', {minimumFractionDigits: 2})}</div>
+          </td>
+          <td>
+             <div style="font-size:0.85rem;">${dateObj.toLocaleDateString('es-DO')}</div>
+             <div style="font-size:0.75rem; color:var(--text-secondary);">${dateObj.toLocaleTimeString('es-DO', {hour:'2-digit', minute:'2-digit'})}</div>
+          </td>
+          <td style="text-align:right;">
+             <a href="factura-detalle.html?id=${f.id}" class="btn btn-secondary btn-sm" title="Ver Factura">
+                <i data-lucide="eye"></i>
+             </a>
+          </td>
+        </tr>
+      `}).join('');
+
+      lucide.createIcons();
+    }
+
+    function updatePagination() {
+      const info = document.getElementById('paginationInfo');
+      const btnPrev = document.getElementById('prevPage');
+      const btnNext = document.getElementById('nextPage');
+
+      if (totalItems === 0) {
+        info.textContent = 'Sin registros';
+        btnPrev.disabled = true;
+        btnNext.disabled = true;
+        return;
+      }
+
+      const from = (currentPage - 1) * itemsPerPage + 1;
+      const to = Math.min(currentPage * itemsPerPage, totalItems);
+
+      info.textContent = `Mostrando ${from} - ${to} de ${totalItems} registros`;
+
+      btnPrev.disabled = currentPage === 1;
+      btnNext.disabled = to >= totalItems;
+    }
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadFacturas();
+      }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      const maxPages = Math.ceil(totalItems / itemsPerPage);
+      if (currentPage < maxPages) {
+        currentPage++;
+        loadFacturas();
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
+
+    init();
+  </script>
+</body>
+</html>

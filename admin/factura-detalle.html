@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klindo | Factura</title>
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    /* Layout específico para factura */
+    .factura-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .factura-paper {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 48px;
+      border: 1px solid var(--border);
+    }
+
+    .factura-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--brand-500);
+    }
+
+    .factura-logo-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .factura-logo {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border-radius: var(--radius-md);
+    }
+
+    .factura-logo-placeholder {
+      width: 80px;
+      height: 80px;
+      background: var(--brand-500);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .factura-empresa-info h2 {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .factura-empresa-info p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin: 2px 0;
+    }
+
+    .factura-numero-section {
+      text-align: right;
+    }
+
+    .factura-numero-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .factura-numero {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.6rem;
+      color: var(--brand-600);
+    }
+
+    .factura-tipo {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 12px;
+      background: var(--brand-50);
+      border: 1px solid var(--brand-200);
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--brand-700);
+    }
+
+    .factura-cliente-section {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+
+    .factura-cliente-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .factura-cliente-nombre {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .factura-cliente-rnc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .factura-fecha {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .factura-tabla {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+
+    .factura-tabla th {
+      background: var(--bg-tertiary);
+      padding: 12px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      border-bottom: 2px solid var(--border);
+    }
+
+    .factura-tabla td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .factura-tabla .text-right {
+      text-align: right;
+    }
+
+    .factura-tabla .text-center {
+      text-align: center;
+    }
+
+    .factura-totales {
+      width: 300px;
+      margin-left: auto;
+      border-top: 2px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .factura-total-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .factura-total-row.total {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+      padding-top: 12px;
+      border-top: 2px solid var(--border);
+      margin-top: 8px;
+    }
+
+    .factura-total-row.total span:last-child {
+      color: var(--brand-600);
+    }
+
+    .factura-footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .factura-acciones {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+
+    /* Media print - ocultar botones y sidebar */
+    @media print {
+      body {
+        background: white;
+      }
+
+      .sidebar,
+      .factura-acciones,
+      .topbar {
+        display: none !important;
+      }
+
+      .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+      }
+
+      .factura-container {
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .factura-paper {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .factura-paper {
+        padding: 24px;
+      }
+
+      .factura-header {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .factura-numero-section {
+        text-align: left;
+      }
+
+      .factura-totales {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i data-lucide="droplets"></i>
+        </div>
+        <div class="sidebar-logo-text">
+          Klin<span>do</span>
+        </div>
+      </div>
+
+      <div class="sidebar-tenant" id="tenantNameDisplay">
+        ...
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Gestión</div>
+        <a href="index.html" class="sidebar-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="ordenes.html" class="sidebar-link">
+          <i data-lucide="file-text"></i>
+          <span>Historial Órdenes</span>
+        </a>
+        <a href="facturas.html" class="sidebar-link active">
+          <i data-lucide="receipt"></i>
+          <span>Facturas</span>
+        </a>
+        <a href="servicios.html" class="sidebar-link">
+          <i data-lucide="list"></i>
+          <span>Servicios y Precios</span>
+        </a>
+        <a href="clientes.html" class="sidebar-link">
+          <i data-lucide="users"></i>
+          <span>Directorio Clientes</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:12px;">Negocio</div>
+        <a href="configuracion.html" class="sidebar-link">
+          <i data-lucide="settings"></i>
+          <span>Configuración</span>
+        </a>
+        <a href="repartidores.html" class="sidebar-link" id="navRepartidores" style="display:none;">
+          <i data-lucide="bike"></i>
+          <span>Delivery</span>
+        </a>
+
+        <div class="sidebar-section-label" style="margin-top:12px;">Operación App</div>
+        <a href="../recepcion.html" class="sidebar-link">
+          <i data-lucide="shopping-bag"></i>
+          <span>Terminal Recepción</span>
+        </a>
+        <a href="../planta.html" class="sidebar-link">
+          <i data-lucide="factory"></i>
+          <span>Monitor de Planta</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom: 12px;">
+          <div class="avatar">
+            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div id="userName" style="font-weight:700; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Cargando...</div>
+            <div id="userRole" style="font-size:0.75rem; color:var(--brand-500); font-weight:600; text-transform:capitalize;">Admin</div>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn btn-ghost btn-block" style="justify-content: flex-start;">
+          <i data-lucide="log-out"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-title">Detalle de Factura</div>
+        <div class="topbar-actions">
+           <a href="facturas.html" class="btn btn-secondary btn-sm">
+             <i data-lucide="arrow-left"></i> Volver al listado
+           </a>
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="page-content factura-container">
+        <div id="facturaContent">
+          <!-- Se carga dinámicamente -->
+          <div style="text-align:center; padding:60px; color:var(--text-muted);">
+            <div class="spinner" style="margin:0 auto 20px;"></div>
+            <p>Cargando factura...</p>
+          </div>
+        </div>
+
+        <div class="factura-acciones" id="facturaAcciones" style="display:none;">
+          <button class="btn btn-primary" onclick="window.print()">
+            <i data-lucide="printer"></i> Imprimir Factura
+          </button>
+          <a href="facturas.html" class="btn btn-secondary">
+            <i data-lucide="arrow-left"></i> Volver
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/js/supabase.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    let session_data = null;
+
+    async function init() {
+      session_data = await window.auth.protectAdminRoute();
+      if (!session_data) return;
+
+      document.getElementById('userName').textContent = session_data.nombre;
+      document.getElementById('userRole').textContent = session_data.rol;
+      document.getElementById('tenantNameDisplay').textContent = session_data.tenants.nombre;
+
+      if (session_data.tenants.plan === 'pro') {
+         document.getElementById('navRepartidores').style.display = 'flex';
+      }
+
+      // Obtener ID de factura de URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const facturaId = urlParams.get('id');
+
+      if (!facturaId) {
+        document.getElementById('facturaContent').innerHTML = `
+          <div style="text-align:center; padding:60px; color:var(--danger);">
+            <i data-lucide="alert-circle" style="width:48px; height:48px; margin-bottom:16px;"></i>
+            <p>No se especificó una factura válida</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      await cargarFactura(facturaId);
+    }
+
+    async function cargarFactura(facturaId) {
+      try {
+        // Cargar factura con datos relacionados
+        const { data: factura, error: facturaError } = await window.supabaseClient
+          .from('facturas')
+          .select(`
+            *,
+            ordenes_servicio (
+              id,
+              numero_orden,
+              numero_dia,
+              cliente_nombre,
+              cliente_telefono,
+              cliente_direccion
+            )
+          `)
+          .eq('id', facturaId)
+          .eq('tenant_id', session_data.tenant_id)
+          .maybeSingle();
+
+        if (facturaError) throw facturaError;
+        if (!factura) {
+          document.getElementById('facturaContent').innerHTML = `
+            <div style="text-align:center; padding:60px; color:var(--danger);">
+              <i data-lucide="file-x" style="width:48px; height:48px; margin-bottom:16px;"></i>
+              <p>Factura no encontrada</p>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
+        // Cargar items de la orden
+        const { data: items, error: itemsError } = await window.supabaseClient
+          .from('items_orden')
+          .select('*')
+          .eq('orden_id', factura.orden_id)
+          .eq('tenant_id', session_data.tenant_id);
+
+        if (itemsError) throw itemsError;
+
+        // Cargar datos del tenant
+        const { data: tenant } = await window.supabaseClient
+          .from('tenants')
+          .select('*')
+          .eq('id', session_data.tenant_id)
+          .maybeSingle();
+
+        renderFactura(factura, items || [], tenant);
+        document.getElementById('facturaAcciones').style.display = 'flex';
+
+      } catch (err) {
+        console.error('Error cargando factura:', err);
+        document.getElementById('facturaContent').innerHTML = `
+          <div style="text-align:center; padding:60px; color:var(--danger);">
+            <i data-lucide="alert-triangle" style="width:48px; height:48px; margin-bottom:16px;"></i>
+            <p>Error al cargar la factura</p>
+            <p style="font-size:0.85rem;">${err.message}</p>
+          </div>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    function renderFactura(factura, items, tenant) {
+      const moneda = factura.moneda || 'RD$';
+      const fecha = new Date(factura.created_at).toLocaleString('es-DO', {
+        dateStyle: 'long',
+        timeStyle: 'short'
+      });
+
+      const tipoLabel = factura.tipo_comprobante === 'B01' ? 'Crédito Fiscal' : 'Consumidor Final';
+
+      // Logo
+      let logoHtml = '';
+      if (tenant?.logo_url) {
+        logoHtml = `<img src="${tenant.logo_url}" alt="Logo" class="factura-logo">`;
+      } else {
+        logoHtml = `
+          <div class="factura-logo-placeholder">
+            <i data-lucide="droplets" style="width:40px; height:40px;"></i>
+          </div>
+        `;
+      }
+
+      // RNC del negocio
+      const rncNegocio = tenant?.rnc ? `<p><strong>RNC:</strong> ${tenant.rnc}</p>` : '';
+      const razonSocial = tenant?.razon_social ? `<p><strong>${tenant.razon_social}</strong></p>` : '';
+
+      // Dirección y contacto
+      const direccion = tenant?.direccion ? `<p>${tenant.direccion}</p>` : '';
+      const telefono = tenant?.telefono ? `<p>Tel: ${tenant.telefono}</p>` : '';
+      const whatsapp = tenant?.whatsapp ? `<p>WhatsApp: ${tenant.whatsapp}</p>` : '';
+
+      // Items HTML
+      const itemsHtml = items.map(item => `
+        <tr>
+          <td>${item.servicio_nombre}</td>
+          <td class="text-center">${item.cantidad}</td>
+          <td class="text-right">${moneda} ${Number(item.precio_unitario).toLocaleString('es-DO', {minimumFractionDigits: 2})}</td>
+          <td class="text-right">${moneda} ${Number(item.subtotal).toLocaleString('es-DO', {minimumFractionDigits: 2})}</td>
+        </tr>
+      `).join('');
+
+      // RNC del cliente si aplica
+      const clienteRncHtml = factura.cliente_rnc ? `
+        <div class="factura-cliente-rnc">RNC/Cédula: ${factura.cliente_rnc}</div>
+      ` : '';
+
+      document.getElementById('facturaContent').innerHTML = `
+        <div class="factura-paper">
+          <div class="factura-header">
+            <div class="factura-logo-section">
+              ${logoHtml}
+              <div class="factura-empresa-info">
+                ${razonSocial}
+                <h2>${tenant?.nombre || 'Mi Lavandería'}</h2>
+                ${rncNegocio}
+                ${direccion}
+                ${telefono}
+                ${whatsapp}
+              </div>
+            </div>
+            <div class="factura-numero-section">
+              <div class="factura-numero-label">FACTURA</div>
+              <div class="factura-numero">${factura.numero_factura}</div>
+              <div class="factura-tipo">${tipoLabel}</div>
+            </div>
+          </div>
+
+          <div class="factura-cliente-section">
+            <div class="factura-cliente-label">Cliente</div>
+            <div class="factura-cliente-nombre">${factura.cliente_nombre}</div>
+            ${clienteRncHtml}
+            <div class="factura-fecha">
+              <i data-lucide="calendar" style="width:14px; height:14px; display:inline; vertical-align:text-bottom;"></i>
+              ${fecha}
+            </div>
+          </div>
+
+          <table class="factura-tabla">
+            <thead>
+              <tr>
+                <th>Servicio / Prenda</th>
+                <th class="text-center">Cantidad</th>
+                <th class="text-right">Precio Unit.</th>
+                <th class="text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div class="factura-totales">
+            <div class="factura-total-row">
+              <span>Subtotal:</span>
+              <span>${moneda} ${Number(factura.subtotal).toLocaleString('es-DO', {minimumFractionDigits: 2})}</span>
+            </div>
+            <div class="factura-total-row">
+              <span>ITBIS (18%):</span>
+              <span>${moneda} ${Number(factura.itbis).toLocaleString('es-DO', {minimumFractionDigits: 2})}</span>
+            </div>
+            <div class="factura-total-row total">
+              <span>TOTAL:</span>
+              <span>${moneda} ${Number(factura.total).toLocaleString('es-DO', {minimumFractionDigits: 2})}</span>
+            </div>
+          </div>
+
+          <div class="factura-footer">
+            <p>Gracias por preferirnos</p>
+            <p style="font-size:0.75rem; margin-top:8px;">Documento generado electrónicamente - Klindo</p>
+          </div>
+        </div>
+      `;
+
+      lucide.createIcons();
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', window.auth.logout);
+
+    init();
+  </script>
+</body>
+</html>

@@ -38,6 +38,10 @@
           <i data-lucide="file-text"></i>
           <span>Historial Órdenes</span>
         </a>
+        <a href="facturas.html" class="sidebar-link">
+          <i data-lucide="receipt"></i>
+          <span>Facturas</span>
+        </a>
         <a href="servicios.html" class="sidebar-link">
           <i data-lucide="list"></i>
           <span>Servicios y Precios</span>
@@ -118,7 +122,17 @@
                          <label class="form-label">Nombre Comercial</label>
                          <input type="text" id="businessName" class="form-control" required>
                        </div>
-                       
+
+                       <div class="form-group" style="grid-column: 1 / -1;">
+                         <label class="form-label">Razón Social (para facturas)</label>
+                         <input type="text" id="businessRazonSocial" class="form-control" placeholder="Nombre legal del negocio">
+                       </div>
+
+                       <div class="form-group">
+                         <label class="form-label">RNC</label>
+                         <input type="text" id="businessRNC" class="form-control" placeholder="1-31-XXXXX-X" maxlength="13">
+                       </div>
+
                        <div class="form-group">
                          <label class="form-label">WhatsApp Corporativo</label>
                          <div style="position:relative;">
@@ -270,6 +284,8 @@
     function loadTenantData() {
       const t = session_data.tenants;
       document.getElementById('businessName').value = t.nombre || '';
+      document.getElementById('businessRazonSocial').value = t.razon_social || '';
+      document.getElementById('businessRNC').value = t.rnc || '';
       document.getElementById('businessWhatsapp').value = t.whatsapp || '';
       document.getElementById('businessPhone').value = t.telefono || '';
       document.getElementById('businessAddress').value = t.direccion || '';
@@ -389,6 +405,8 @@
 
         const payload = {
             nombre: document.getElementById('businessName').value,
+            razon_social: document.getElementById('businessRazonSocial').value,
+            rnc: document.getElementById('businessRNC').value,
             whatsapp: document.getElementById('businessWhatsapp').value,
             telefono: document.getElementById('businessPhone').value,
             direccion: document.getElementById('businessAddress').value,
