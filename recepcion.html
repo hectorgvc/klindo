@@ -863,6 +863,30 @@
   </div>
 </div>
 
+<!-- ══ Modal: Seleccionar Repartidor ══ -->
+<div class="modal-overlay" id="modalRepartidor">
+  <div class="modal" style="max-width: 400px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Asignar Repartidor</h3>
+      <button type="button" class="modal-close" onclick="cerrarModal('modalRepartidor')">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+      <p style="margin-bottom: 16px; color: var(--text-secondary);">Selecciona el repartidor para esta entrega:</p>
+      <div class="form-group">
+        <select id="selectRepartidor" class="form-control" style="width: 100%;">
+          <option value="">Cargando repartidores...</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalRepartidor')">Cancelar</button>
+      <button type="button" class="btn btn-primary" onclick="confirmarRepartidor()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ Modal: Nueva Orden ══ -->
 <div class="modal-overlay modal-nueva-orden" id="modalNuevaOrden">
   <div class="modal">
@@ -1740,8 +1764,12 @@ function generarBotonesEstado(orden) {
   return siguientes.map(estado => {
     const cfg = ESTADOS[estado];
     const esCancel = estado === 'cancelado';
+    const esEnCamino = estado === 'en_camino';
+    const onclick = esEnCamino
+      ? `seleccionarRepartidor('${orden.id}')`
+      : `cambiarEstado('${orden.id}','${estado}')`;
     return `
-      <button class="btn ${esCancel ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="cambiarEstado('${orden.id}','${estado}')">
+      <button class="btn ${esCancel ? 'btn-danger' : 'btn-secondary'} btn-sm" onclick="${onclick}">
         ${cfg.emoji} ${cfg.label}
       </button>`;
   }).join('');
@@ -1774,6 +1802,86 @@ async function cambiarEstado(ordenId, nuevoEstado) {
   renderOrdenes();
   actualizarContadores();
   showToast(`Estado actualizado: ${ESTADOS[nuevoEstado]?.label}`, 'success');
+}
+
+let ordenPendienteRepartidor = null;
+
+async function seleccionarRepartidor(ordenId) {
+  ordenPendienteRepartidor = ordenId;
+
+  // Cargar repartidores activos del tenant
+  const { data: repartidores, error } = await window.supabaseClient
+    .from('profiles')
+    .select('id, nombre, telefono')
+    .eq('tenant_id', tenantId)
+    .eq('rol', 'repartidor')
+    .eq('activo', true)
+    .order('nombre');
+
+  if (error) {
+    showToast('Error al cargar repartidores: ' + error.message, 'error');
+    return;
+  }
+
+  const select = document.getElementById('selectRepartidor');
+  if (!repartidores || repartidores.length === 0) {
+    select.innerHTML = '<option value="">No hay repartidores activos</option>';
+  } else {
+    select.innerHTML = repartidores.map(r =>
+      `<option value="${r.id}">${r.nombre}${r.telefono ? ` (${r.telefono})` : ''}</option>`
+    ).join('');
+  }
+
+  abrirModal('modalRepartidor');
+}
+
+async function confirmarRepartidor() {
+  const select = document.getElementById('selectRepartidor');
+  const repartidorId = select.value;
+
+  if (!repartidorId) {
+    showToast('Selecciona un repartidor', 'error');
+    return;
+  }
+
+  cerrarModal('modalRepartidor');
+
+  // Actualizar orden con nuevo estado y repartidor asignado
+  const { error } = await window.supabaseClient
+    .from('ordenes_servicio')
+    .update({
+      estado: 'en_camino',
+      repartidor_id: repartidorId,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', ordenPendienteRepartidor);
+
+  if (error) {
+    showToast('Error al asignar repartidor: ' + error.message, 'error');
+    return;
+  }
+
+  // Actualizar local
+  const idx = ordenesHoy.findIndex(o => o.id === ordenPendienteRepartidor);
+  if (idx >= 0) {
+    ordenesHoy[idx].estado = 'en_camino';
+    ordenesHoy[idx].repartidor_id = repartidorId;
+    // Actualizar botones en modal abierto
+    const btn = document.getElementById('estadoActions');
+    if (btn) btn.innerHTML = generarBotonesEstado(ordenesHoy[idx]);
+    // Actualizar header modal
+    const cfg = ESTADOS['en_camino'];
+    const badgeEl = document.getElementById('modalDetalleBody')?.querySelector('.badge');
+    if (badgeEl) {
+      badgeEl.className = `badge ${cfg.badgeClass}`;
+      badgeEl.textContent = `${cfg.emoji} ${cfg.label}`;
+    }
+  }
+
+  ordenPendienteRepartidor = null;
+  renderOrdenes();
+  actualizarContadores();
+  showToast('Orden asignada para delivery', 'success');
 }
 
 async function marcarPagado(ordenId) {
