@@ -405,7 +405,7 @@
           .update(payload)
           .eq('id', session_data.tenant_id)
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
