@@ -396,11 +396,13 @@
 
           if (uploadError) throw uploadError;
 
-          const { data: { publicUrl } } = window.supabaseClient.storage
+          const { data: urlData } = window.supabaseClient.storage
             .from('tenant-logos')
             .getPublicUrl(filePath);
 
-          logo_url = publicUrl;
+          logo_url = urlData.publicUrl;
+
+          console.log('Logo URL generada:', logo_url);
         }
 
         const payload = {
