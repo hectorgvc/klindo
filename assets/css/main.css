@@ -127,17 +127,19 @@ input, select, textarea { font-family: inherit; }
 }
 
 .sidebar-logo {
-  padding: 20px 20px 16px;
+  padding: 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .sidebar-logo-icon {
-  width: 36px; height: 36px;
+  width: 120px;
+  height: 40px;
   background: linear-gradient(135deg, var(--brand-500), var(--cyan-500));
-  border-radius: var(--radius-md);
+  border-radius: 8px;
+  overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   color: white;
   flex-shrink: 0;
