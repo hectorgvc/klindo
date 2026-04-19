@@ -421,11 +421,13 @@
         };
 
         console.log('Payload a guardar:', JSON.stringify(payload));
+        console.log('tenant_id usado:', session_data.tenant_id);
+        console.log('tenants.id:', session_data.tenants?.id);
 
         const { data, error } = await window.supabaseClient
           .from('tenants')
           .update(payload)
-          .eq('id', session_data.tenant_id)
+          .eq('id', session_data.tenants.id)
           .select()
           .single();
 
