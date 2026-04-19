@@ -307,6 +307,50 @@
     // Inicializar Lucide icons
     lucide.createIcons();
 
+    // Cargar logo del tenant si está disponible
+    async function loadTenantLogo() {
+      // Intentar obtener tenant del localStorage (sesión anterior)
+      const lastTenantSlug = localStorage.getItem('last_tenant_slug');
+      const lastTenantId = localStorage.getItem('tenant_id');
+
+      // O buscar en URL: ?tenant=slug
+      const urlParams = new URLSearchParams(window.location.search);
+      const tenantSlugFromUrl = urlParams.get('tenant');
+
+      const tenantIdentifier = tenantSlugFromUrl || lastTenantSlug || lastTenantId;
+      if (!tenantIdentifier) return;
+
+      try {
+        // Consultar tenant por slug o id
+        let query = window.supabaseClient.from('tenants').select('logo_url, nombre');
+        if (tenantSlugFromUrl || lastTenantSlug) {
+          query = query.eq('slug', tenantSlugFromUrl || lastTenantSlug);
+        } else {
+          query = query.eq('id', lastTenantId);
+        }
+        const { data: tenant, error } = await query.maybeSingle();
+
+        if (error || !tenant || !tenant.logo_url) return;
+
+        // Reemplazar el logo en el formulario
+        const brandIcon = document.querySelector('.login-brand-icon');
+        const brandName = document.querySelector('.login-brand-name');
+
+        if (brandIcon) {
+          brandIcon.innerHTML = `<img src="${tenant.logo_url}" style="width:100%; height:100%; object-fit:contain; border-radius:var(--radius-md); background:white; padding:2px;">`;
+        }
+        if (brandName) {
+          brandName.textContent = tenant.nombre || 'Mi Lavandería';
+          brandName.innerHTML = brandName.textContent; // eliminar el span coloreado
+        }
+      } catch (err) {
+        console.log('No se pudo cargar el logo del tenant:', err);
+      }
+    }
+
+    // Cargar logo al iniciar
+    loadTenantLogo();
+
     async function handleLogin(e) {
       e.preventDefault();
 

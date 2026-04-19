@@ -1171,8 +1171,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const logoUrl = tenantData?.logo_url;
   if (logoUrl) {
     const sidebarLogo = document.getElementById('sidebarLogo');
+    const sidebarLogoText = document.querySelector('.sidebar-logo-text');
     if (sidebarLogo) {
       sidebarLogo.innerHTML = `<img src="${logoUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:8px; background:white; padding:2px;">`;
+    }
+    if (sidebarLogoText) {
+      sidebarLogoText.style.display = 'none';
     }
   }
 

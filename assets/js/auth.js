@@ -52,6 +52,11 @@ async function login(email, password) {
     sessionStorage.setItem('user_role', profile.rol);
     sessionStorage.setItem('user_name', profile.nombre);
 
+    // Guardar slug del tenant en localStorage para mostrar logo en login
+    if (tenant && tenant.slug) {
+      localStorage.setItem('last_tenant_slug', tenant.slug);
+    }
+
     // Redirigir según el rol
     if (profile.rol === 'superadmin') {
       window.location.href = 'superadmin/index.html';

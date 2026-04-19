@@ -278,8 +278,12 @@
       const logoUrl = session_data.tenants?.logo_url;
       if (logoUrl) {
         const sidebarLogoIcon = document.querySelector('.sidebar-logo-icon');
+        const sidebarLogoText = document.querySelector('.sidebar-logo-text');
         if (sidebarLogoIcon) {
           sidebarLogoIcon.innerHTML = `<img src="${logoUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:8px; background:white; padding:2px;">`;
+        }
+        if (sidebarLogoText) {
+          sidebarLogoText.style.display = 'none';
         }
       }
 
