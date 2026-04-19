@@ -391,13 +391,13 @@
           const filePath = `${session_data.tenant_id}/logo/${fileName}`;
 
           const { error: uploadError } = await window.supabaseClient.storage
-            .from('tenant-assets')
+            .from('tenant-logos')
             .upload(filePath, selectedLogo);
 
           if (uploadError) throw uploadError;
 
           const { data: { publicUrl } } = window.supabaseClient.storage
-            .from('tenant-assets')
+            .from('tenant-logos')
             .getPublicUrl(filePath);
 
           logo_url = publicUrl;
