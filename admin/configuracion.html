@@ -420,12 +420,16 @@
             logo_url: logo_url
         };
 
+        console.log('Payload a guardar:', JSON.stringify(payload));
+
         const { data, error } = await window.supabaseClient
           .from('tenants')
           .update(payload)
           .eq('id', session_data.tenant_id)
           .select()
-          .maybeSingle();
+          .single();
+
+        console.log('Resultado update:', data, error);
 
         if (error) throw error;
         if (data) {
