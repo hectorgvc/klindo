@@ -1172,7 +1172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (logoUrl) {
     const sidebarLogo = document.getElementById('sidebarLogo');
     if (sidebarLogo) {
-      sidebarLogo.innerHTML = `<img src="${logoUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`;
+      sidebarLogo.innerHTML = `<img src="${logoUrl}" style="width:100%; height:100%; object-fit:contain; border-radius:8px; background:white; padding:2px;">`;
     }
   }
 
