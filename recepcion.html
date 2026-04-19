@@ -1167,6 +1167,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('sidebarTenant').textContent = tenantData?.nombre || 'Mi Lavandería';
   document.getElementById('topbarTenant').textContent  = tenantData?.nombre || 'Mi Lavandería';
 
+  // Mostrar logo del tenant en el sidebar si existe
+  const logoUrl = tenantData?.logo_url;
+  if (logoUrl) {
+    const sidebarLogo = document.getElementById('sidebarLogo');
+    if (sidebarLogo) {
+      sidebarLogo.innerHTML = `<img src="${logoUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`;
+    }
+  }
+
   const initials = (currentProfile.nombre || 'U').split(' ').map(p => p[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('userAvatar').textContent = initials;
 
